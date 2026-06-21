@@ -1,6 +1,13 @@
 import { invoke } from '@tauri-apps/api/core';
-import type { BookRecord, BookDetail, TranslationJob, SystemConfig } from './types';
-import { BASE_URL } from './config';
+import type {
+  BookRecord,
+  BookDetail,
+  TranslationJob,
+  SystemConfig,
+  TgChannel,
+  TgMessage,
+} from './types';
+import { BASE_URL, TG_CHANNELS_URL } from './config';
 
 let rpcId = 0;
 
@@ -64,6 +71,39 @@ export async function rpcWithFile<T = unknown>(
   }
 }
 
+export async function tgRpc<T = unknown>(
+  method: string,
+  params: Record<string, unknown> = {}
+): Promise<T> {
+  const id = ++rpcId;
+  const body = JSON.stringify({ jsonrpc: '2.0', method, params, id });
+  console.log(`[tg-rpc] → ${method}`);
+
+  const res = await fetch(TG_CHANNELS_URL + '/', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body,
+  });
+
+  if (!res.ok) {
+    throw new Error(`TG API HTTP ${res.status}`);
+  }
+
+  const data = (await res.json()) as {
+    error?: { message: string; code: number; data?: unknown };
+    result?: T;
+  };
+  if (data.error) {
+    const err = new Error(data.error.message) as Error & { code: number; data?: unknown };
+    err.code = data.error.code;
+    err.data = data.error.data;
+    throw err;
+  }
+
+  console.log(`[tg-rpc] ← ${method} ok`);
+  return data.result as T;
+}
+
 export const api = {
   systemConfig: () => rpc<SystemConfig>('system.config'),
   modelList: () => rpc<{ models: string[] }>('model.list'),
@@ -91,6 +131,10 @@ export const api = {
   jobGet: (jobId: string) => rpc<TranslationJob>('job.get', { jobId }),
   jobDelete: (jobId: string) => rpc<{ deleted: boolean }>('job.delete', { jobId }),
   taskList: (docId: string) => rpc<{ tasks: unknown[] }>('task.list', { docId }),
+  tgChannelList: (limit = 100) => tgRpc<TgChannel[]>('channels.list', { limit }),
+  tgChannelGet: (id: string) => tgRpc<TgChannel>('channels.get', { id }),
+  tgMessages: (channelId: string, limit = 30, offset = 0) =>
+    tgRpc<TgMessage[]>('channels.getMessages', { channelId, limit, offset }),
 };
 
 // ponytail: BASE_URL still used in BookDetail for img/download URLs (browser loads those directly, not via invoke)

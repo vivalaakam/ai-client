@@ -88,3 +88,19 @@ export interface WSMessage {
   job?: TranslationJob;
   jobs?: TranslationJob[];
 }
+
+export interface TgChannel {
+  id: string;
+  title: string;
+  username: string | null;
+  createdAt: string;
+}
+
+export interface TgMessage {
+  channelId: string;
+  messageId: number;
+  date: string;
+  editDate: string | null;
+  contentTextText: string | null;
+  isPinned: boolean;
+}
