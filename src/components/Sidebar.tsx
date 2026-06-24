@@ -1,4 +1,4 @@
-import type { BookRecord, TgChannel } from '../types';
+import type { AppConfigEntry, BookRecord, PromptRecord, TgChannel } from '../types';
 
 interface SidebarProps {
   books: BookRecord[];
@@ -8,14 +8,28 @@ interface SidebarProps {
   tgChannelsLoading: boolean;
   tgChannelsError: string | null;
   selectedChannelId: string | null;
+  configEntries: AppConfigEntry[];
+  configEntriesLoading: boolean;
+  configEntriesError: string | null;
+  selectedConfigSlug: string | null;
+  prompts: PromptRecord[];
+  promptsLoading: boolean;
+  promptsError: string | null;
+  selectedPromptId: string | null;
   onRefreshTgChannels: () => void;
+  onRefreshConfigEntries: () => void | Promise<void>;
+  onSelectConfigEntry: (slug: string) => void;
+  onCreateConfigEntry: () => void;
+  onRefreshPrompts: () => void | Promise<void>;
+  onSelectPrompt: (promptId: string) => void;
+  onCreatePrompt: () => void;
   onSelectBook: (bookId: string | null) => void;
   onRefresh: () => void;
   connected: boolean;
   modelsCount: number;
   modelsError: boolean;
   onUploadClick: () => void;
-  currentView: 'library' | 'detail' | 'jobs' | 'news';
+  currentView: 'library' | 'detail' | 'jobs' | 'news' | 'config' | 'prompts';
   onNavigate: (path: string) => void;
 }
 
@@ -27,7 +41,21 @@ export function Sidebar({
   tgChannelsLoading,
   tgChannelsError,
   selectedChannelId,
+  configEntries,
+  configEntriesLoading,
+  configEntriesError,
+  selectedConfigSlug,
+  prompts,
+  promptsLoading,
+  promptsError,
+  selectedPromptId,
   onRefreshTgChannels,
+  onRefreshConfigEntries,
+  onSelectConfigEntry,
+  onCreateConfigEntry,
+  onRefreshPrompts,
+  onSelectPrompt,
+  onCreatePrompt,
   onSelectBook,
   connected: _connected,
   modelsCount,
@@ -70,6 +98,22 @@ export function Sidebar({
           <span className="activity-icon">⚙️</span>
           {activeCount > 0 && <span className="activity-badge active">{activeCount}</span>}
         </button>
+        <button
+          className={`activity-item ${currentView === 'config' ? 'active' : ''}`}
+          onClick={() => onNavigate('/config')}
+          title="Config"
+          aria-label="Config"
+        >
+          <span className="activity-icon">🔧</span>
+        </button>
+        <button
+          className={`activity-item ${currentView === 'prompts' ? 'active' : ''}`}
+          onClick={() => onNavigate('/prompts')}
+          title="Prompts"
+          aria-label="Prompts"
+        >
+          <span className="activity-icon">✍️</span>
+        </button>
       </nav>
 
       <aside className="sidebar">
@@ -86,6 +130,26 @@ export function Sidebar({
             selectedChannelId={selectedChannelId}
             onRefresh={onRefreshTgChannels}
             onSelect={(channelId) => onNavigate(channelId ? `/news?channel=${channelId}` : '/news')}
+          />
+        ) : currentView === 'prompts' ? (
+          <PromptsSidebar
+            prompts={prompts}
+            loading={promptsLoading}
+            error={promptsError}
+            selectedPromptId={selectedPromptId}
+            onRefresh={onRefreshPrompts}
+            onSelect={onSelectPrompt}
+            onCreate={onCreatePrompt}
+          />
+        ) : currentView === 'config' ? (
+          <ConfigSidebar
+            entries={configEntries}
+            loading={configEntriesLoading}
+            error={configEntriesError}
+            selectedSlug={selectedConfigSlug}
+            onRefresh={onRefreshConfigEntries}
+            onSelect={onSelectConfigEntry}
+            onCreate={onCreateConfigEntry}
           />
         ) : (
           <>
@@ -126,6 +190,149 @@ export function Sidebar({
       </aside>
     </>
   );
+}
+
+function ConfigSidebar({
+  entries,
+  loading,
+  error,
+  selectedSlug,
+  onRefresh,
+  onSelect,
+  onCreate,
+}: {
+  entries: AppConfigEntry[];
+  loading: boolean;
+  error: string | null;
+  selectedSlug: string | null;
+  onRefresh: () => void | Promise<void>;
+  onSelect: (slug: string) => void;
+  onCreate: () => void;
+}) {
+  return (
+    <>
+      <div className="sidebar-upload">
+        <button className="upload-btn" onClick={onCreate}>
+          + New config
+        </button>
+        <button className="btn btn-secondary btn-sm sidebar-refresh-btn" onClick={onRefresh}>
+          Refresh
+        </button>
+        {error && <div className="sidebar-error">{error}</div>}
+      </div>
+      <div className="sidebar-list">
+        {loading && entries.length === 0 ? (
+          <div className="empty-state">Loading config…</div>
+        ) : entries.length === 0 ? (
+          <div className="empty-state">No config entries yet</div>
+        ) : (
+          entries.map((entry) => (
+            <ConfigListItem
+              key={entry.slug}
+              entry={entry}
+              active={entry.slug === selectedSlug}
+              onClick={() => onSelect(entry.slug)}
+            />
+          ))
+        )}
+      </div>
+    </>
+  );
+}
+
+function ConfigListItem({
+  entry,
+  active,
+  onClick,
+}: {
+  entry: AppConfigEntry;
+  active: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button className={`config-item ${active ? 'active' : ''}`} onClick={onClick}>
+      <div className="config-item-slug">{entry.slug}</div>
+      <div className="config-item-value">{entry.value || 'Empty value'}</div>
+    </button>
+  );
+}
+
+function PromptsSidebar({
+  prompts,
+  loading,
+  error,
+  selectedPromptId,
+  onRefresh,
+  onSelect,
+  onCreate,
+}: {
+  prompts: PromptRecord[];
+  loading: boolean;
+  error: string | null;
+  selectedPromptId: string | null;
+  onRefresh: () => void | Promise<void>;
+  onSelect: (promptId: string) => void;
+  onCreate: () => void;
+}) {
+  return (
+    <>
+      <div className="sidebar-upload">
+        <button className="upload-btn" onClick={onCreate}>
+          + New prompt
+        </button>
+        <button className="btn btn-secondary btn-sm sidebar-refresh-btn" onClick={onRefresh}>
+          Refresh
+        </button>
+        {error && <div className="sidebar-error">{error}</div>}
+      </div>
+
+      <div className="sidebar-list">
+        {loading && prompts.length === 0 ? (
+          <div className="empty-state">Loading prompts…</div>
+        ) : prompts.length === 0 ? (
+          <div className="empty-state">No prompts yet</div>
+        ) : (
+          prompts.map((prompt) => (
+            <PromptListItem
+              key={prompt.id}
+              prompt={prompt}
+              active={prompt.id === selectedPromptId}
+              onClick={() => onSelect(prompt.id)}
+            />
+          ))
+        )}
+      </div>
+    </>
+  );
+}
+
+function PromptListItem({
+  prompt,
+  active,
+  onClick,
+}: {
+  prompt: PromptRecord;
+  active: boolean;
+  onClick: () => void;
+}) {
+  const title = prompt.tags[0] || firstLine(prompt.content) || prompt.id;
+  return (
+    <button className={`prompt-item ${active ? 'active' : ''}`} onClick={onClick}>
+      <div className="prompt-item-top">
+        <span>{title}</span>
+        <small>v{prompt.version}</small>
+      </div>
+      <div className="prompt-item-preview">{firstLine(prompt.content) || 'Empty prompt'}</div>
+      {prompt.tags.length > 0 && <div className="prompt-item-tags">{prompt.tags.join(', ')}</div>}
+    </button>
+  );
+}
+
+function firstLine(value: string) {
+  return value
+    .split('\n')
+    .map((line) => line.trim())
+    .find(Boolean);
 }
 
 function NewsSidebar({
@@ -190,7 +397,9 @@ function ChannelListItem({
   return (
     <div className={`channel-item ${active ? 'active' : ''}`} onClick={onClick}>
       <div className="channel-item-title">{channel.title}</div>
-      <div className="channel-item-meta">{channel.username ? `@${channel.username}` : channel.id}</div>
+      <div className="channel-item-meta">
+        {channel.username ? `@${channel.username}` : channel.id}
+      </div>
     </div>
   );
 }

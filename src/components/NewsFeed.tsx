@@ -27,6 +27,7 @@ export function NewsFeed({
   const [sources, setSources] = useState<FeedSourceMessage[]>([]);
   const [sourcesLoading, setSourcesLoading] = useState(false);
   const [sourcesError, setSourcesError] = useState<string | null>(null);
+  const [sourceCounts, setSourceCounts] = useState<Record<string, number>>({});
 
   const selectedChannel = useMemo(
     () => channels.find((channel) => channel.id === selectedChannelId) ?? null,
@@ -37,18 +38,21 @@ export function NewsFeed({
     [channels]
   );
 
-  const loadFeed = useCallback(async (offset: number) => {
-    const limit = selectedChannelId ? SELECTED_CHANNEL_SCAN_SIZE : PAGE_SIZE;
-    const data = await api.feedList(limit, offset);
-    const filtered = selectedChannelId
-      ? data.filter((item) => item.channelId === selectedChannelId)
-      : data;
-    return {
-      items: filtered,
-      nextOffset: offset + data.length,
-      hasMore: data.length === limit,
-    };
-  }, [selectedChannelId]);
+  const loadFeed = useCallback(
+    async (offset: number) => {
+      const limit = selectedChannelId ? SELECTED_CHANNEL_SCAN_SIZE : PAGE_SIZE;
+      const data = await api.feedList(limit, offset);
+      const filtered = selectedChannelId
+        ? data.filter((item) => item.channelId === selectedChannelId)
+        : data;
+      return {
+        items: filtered,
+        nextOffset: offset + data.length,
+        hasMore: data.length === limit,
+      };
+    },
+    [selectedChannelId]
+  );
 
   const loadInitialFeed = useCallback(async () => {
     setLoading(true);
@@ -105,6 +109,7 @@ export function NewsFeed({
     try {
       const data = await api.feedMessages(item.id);
       setSources(data);
+      setSourceCounts((current) => ({ ...current, [item.id]: data.length }));
     } catch (err) {
       setSourcesError(err instanceof Error ? err.message : 'Failed to load sources');
     } finally {
@@ -131,6 +136,34 @@ export function NewsFeed({
   useEffect(() => {
     loadInitialFeed();
   }, [loadInitialFeed, refreshNonce]);
+
+  useEffect(() => {
+    let cancelled = false;
+    const missing = items.filter((item) => sourceCounts[item.id] === undefined);
+    if (missing.length === 0) return;
+
+    void Promise.all(
+      missing.map(async (item) => {
+        try {
+          const data = await api.feedMessages(item.id);
+          return [item.id, data.length] as const;
+        } catch (err) {
+          console.warn('[news] failed to load source count', item.id, err);
+          return [item.id, 0] as const;
+        }
+      })
+    ).then((counts) => {
+      if (cancelled) return;
+      setSourceCounts((current) => ({
+        ...current,
+        ...Object.fromEntries(counts),
+      }));
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [items, sourceCounts]);
 
   return (
     <section className="news-feed">
@@ -160,6 +193,7 @@ export function NewsFeed({
                 key={item.id}
                 item={item}
                 channel={channelById.get(item.channelId) ?? selectedChannel}
+                sourceCount={sourceCounts[item.id]}
                 onMarkViewed={markViewed}
                 onOpenSources={openSources}
               />
@@ -192,11 +226,13 @@ export function NewsFeed({
 function FeedCard({
   item,
   channel,
+  sourceCount,
   onMarkViewed,
   onOpenSources,
 }: {
   item: FeedItem;
   channel: TgChannel | null;
+  sourceCount: number | undefined;
   onMarkViewed: (id: string) => void;
   onOpenSources: (item: FeedItem) => void;
 }) {
@@ -213,7 +249,7 @@ function FeedCard({
         <div className="news-card-actions">
           {item.postType && <span className="badge parsing">{item.postType}</span>}
           <button className="btn btn-secondary btn-sm" onClick={() => onOpenSources(item)}>
-            Sources
+            Sources{sourceCount && sourceCount > 1 ? ` (${sourceCount})` : ''}
           </button>
           {!item.isViewed && (
             <button className="btn btn-secondary btn-sm" onClick={() => onMarkViewed(item.id)}>
@@ -244,6 +280,18 @@ function SourcesModal({
   onOpenSource: (url: string) => void;
   onClose: () => void;
 }) {
+  const [copied, setCopied] = useState(false);
+
+  const copyFeedId = useCallback(async () => {
+    try {
+      await navigator.clipboard.writeText(item.id);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1400);
+    } catch (err) {
+      console.warn('[news] failed to copy feed id', err);
+    }
+  }, [item.id]);
+
   return (
     <div className="news-sources-backdrop" role="presentation" onClick={onClose}>
       <div
@@ -262,6 +310,12 @@ function SourcesModal({
             Close
           </button>
         </div>
+
+        <button className="news-feed-id" onClick={copyFeedId}>
+          <span>Feed ID</span>
+          <code>{item.id}</code>
+          <small>{copied ? 'Copied' : 'Click to copy'}</small>
+        </button>
 
         {error && <div className="inline-error">{error}</div>}
         {loading ? (

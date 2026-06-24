@@ -4,17 +4,21 @@ import { DropZone } from './DropZone';
 import { BookDetail } from './BookDetail';
 import { JobsView } from './JobsView';
 import { NewsFeed } from './NewsFeed';
+import { ConfigView } from './ConfigView';
+import { PromptsView } from './PromptsView';
 import { api } from '../api';
 import type {
   BookRecord,
   BookDetail as BookDetailType,
+  AppConfigEntry,
+  PromptRecord,
   SystemConfig,
   TgChannel,
   TranslationJob,
 } from '../types';
 
 interface MainContentProps {
-  view: 'library' | 'detail' | 'jobs' | 'news';
+  view: 'library' | 'detail' | 'jobs' | 'news' | 'config' | 'prompts';
   selectedBookId?: string | null;
   books: BookRecord[];
   config: SystemConfig;
@@ -22,9 +26,21 @@ interface MainContentProps {
   modelsError: boolean;
   jobs: TranslationJob[];
   tgChannels: TgChannel[];
+  configEntries: AppConfigEntry[];
+  configEntriesLoading: boolean;
+  configEntriesError: string | null;
+  selectedConfigSlug: string | null;
+  prompts: PromptRecord[];
+  promptsLoading: boolean;
+  promptsError: string | null;
+  selectedPromptId: string | null;
   selectedChannelId: string | null;
   newsRefreshNonce: number;
   onRefreshTgChannels: () => void | Promise<void>;
+  onRefreshConfigEntries: () => void | Promise<void>;
+  onSelectConfigEntry: (slug: string | null) => void;
+  onRefreshPrompts: () => void | Promise<void>;
+  onSelectPrompt: (promptId: string | null) => void;
   onNavigate: (path: string) => void;
   onSelectBook: (bookId: string | null) => void;
   onRefresh: () => void;
@@ -64,6 +80,28 @@ export function MainContent(props: MainContentProps) {
           </button>
           <span className="breadcrumb-sep">/</span>
           <span className="breadcrumb-item active">📰 News</span>
+        </div>
+      );
+    }
+    if (view === 'config') {
+      return (
+        <div className="breadcrumb">
+          <button className="breadcrumb-link" onClick={() => props.onNavigate('/')}>
+            📖 Library
+          </button>
+          <span className="breadcrumb-sep">/</span>
+          <span className="breadcrumb-item active">🔧 Config</span>
+        </div>
+      );
+    }
+    if (view === 'prompts') {
+      return (
+        <div className="breadcrumb">
+          <button className="breadcrumb-link" onClick={() => props.onNavigate('/')}>
+            📖 Library
+          </button>
+          <span className="breadcrumb-sep">/</span>
+          <span className="breadcrumb-item active">✍️ Prompts</span>
         </div>
       );
     }
@@ -131,6 +169,52 @@ export function MainContent(props: MainContentProps) {
             selectedChannelId={props.selectedChannelId}
             refreshNonce={props.newsRefreshNonce}
             onRefreshChannels={props.onRefreshTgChannels}
+          />
+        </div>
+      </main>
+    );
+  }
+
+  if (view === 'config') {
+    return (
+      <main className="main">
+        <div className="main-header">
+          {renderBreadcrumb()}
+          <span className="main-header-count">
+            {props.selectedConfigSlug ? 'Editing config' : 'New config'}
+          </span>
+        </div>
+        <div className="main-content prompt-main-content">
+          <ConfigView
+            entries={props.configEntries}
+            loading={props.configEntriesLoading}
+            error={props.configEntriesError}
+            selectedSlug={props.selectedConfigSlug}
+            onSelectEntry={props.onSelectConfigEntry}
+            onRefreshEntries={props.onRefreshConfigEntries}
+          />
+        </div>
+      </main>
+    );
+  }
+
+  if (view === 'prompts') {
+    return (
+      <main className="main">
+        <div className="main-header">
+          {renderBreadcrumb()}
+          <span className="main-header-count">
+            {props.selectedPromptId ? 'Editing prompt' : 'New prompt'}
+          </span>
+        </div>
+        <div className="main-content prompt-main-content">
+          <PromptsView
+            prompts={props.prompts}
+            loading={props.promptsLoading}
+            error={props.promptsError}
+            selectedPromptId={props.selectedPromptId}
+            onSelectPrompt={props.onSelectPrompt}
+            onRefreshPrompts={props.onRefreshPrompts}
           />
         </div>
       </main>
