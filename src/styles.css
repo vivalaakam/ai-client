@@ -1090,8 +1090,12 @@ button {
   padding: 16px;
 }
 
-.news-card.pinned {
-  border-color: var(--yellow);
+.news-card.unread {
+  border-color: var(--accent);
+}
+
+.news-card.viewed {
+  opacity: 0.72;
 }
 
 .news-card-header {
@@ -1111,6 +1115,14 @@ button {
   color: var(--text2);
   font-size: 12px;
   margin-top: 2px;
+}
+
+.news-card-actions {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
 }
 
 .news-text {
@@ -1133,4 +1145,83 @@ button {
   display: flex;
   justify-content: center;
   padding: 8px 0 16px;
+}
+
+.news-sources-backdrop {
+  align-items: center;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  inset: 0;
+  justify-content: center;
+  padding: 24px;
+  position: fixed;
+  z-index: 50;
+}
+
+.news-sources-modal {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-height: min(640px, calc(100vh - 48px));
+  max-width: 560px;
+  overflow: auto;
+  padding: 18px;
+  width: min(560px, calc(100vw - 48px));
+}
+
+.news-sources-header {
+  align-items: flex-start;
+  display: flex;
+  gap: 16px;
+  justify-content: space-between;
+}
+
+.news-sources-header h3 {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.news-sources-subtitle {
+  color: var(--text2);
+  font-size: 12px;
+  margin-top: 2px;
+}
+
+.news-sources-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.news-source-link {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 12px;
+  text-decoration: none;
+  text-align: left;
+}
+
+.news-source-link:hover,
+.news-source-link:focus-visible {
+  border-color: var(--accent);
+}
+
+.news-source-link span,
+.news-source-link small {
+  overflow-wrap: anywhere;
+}
+
+.news-source-link small {
+  color: var(--text2);
+  font-size: 12px;
 }

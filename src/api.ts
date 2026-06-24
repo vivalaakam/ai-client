@@ -4,6 +4,9 @@ import type {
   BookDetail,
   TranslationJob,
   SystemConfig,
+  FeedItem,
+  FeedPostType,
+  FeedSourceMessage,
   TgChannel,
   TgMessage,
 } from './types';
@@ -135,6 +138,16 @@ export const api = {
   tgChannelGet: (id: string) => tgRpc<TgChannel>('channels.get', { id }),
   tgMessages: (channelId: string, limit = 30, offset = 0) =>
     tgRpc<TgMessage[]>('channels.getMessages', { channelId, limit, offset }),
+  feedList: (limit = 30, offset = 0, postType?: FeedPostType, isViewed?: boolean) =>
+    tgRpc<FeedItem[]>('feed.list', {
+      limit,
+      offset,
+      ...(postType ? { postType } : {}),
+      ...(isViewed === undefined ? {} : { isViewed }),
+    }),
+  feedGet: (id: string) => tgRpc<FeedItem>('feed.get', { id }),
+  feedMessages: (id: string) => tgRpc<FeedSourceMessage[]>('feed.getMessages', { id }),
+  feedMarkViewed: (id: string) => tgRpc<{ ok: boolean }>('feed.markViewed', { id }),
 };
 
 // ponytail: BASE_URL still used in BookDetail for img/download URLs (browser loads those directly, not via invoke)

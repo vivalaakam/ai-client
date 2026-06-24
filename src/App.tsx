@@ -25,6 +25,7 @@ function AppInner() {
   const [tgChannels, setTgChannels] = useState<TgChannel[]>([]);
   const [tgChannelsLoading, setTgChannelsLoading] = useState(false);
   const [tgChannelsError, setTgChannelsError] = useState<string | null>(null);
+  const [newsRefreshNonce, setNewsRefreshNonce] = useState(0);
 
   const { connected, subscribe } = useWebSocket((job) => {
     setJobUpdate(job);
@@ -93,6 +94,12 @@ function AppInner() {
     }
   }, []);
 
+  const refreshNews = useCallback(async () => {
+    console.log('[news] refresh requested');
+    await refreshTgChannels();
+    setNewsRefreshNonce((nonce) => nonce + 1);
+  }, [refreshTgChannels]);
+
   const view =
     location.pathname === '/news'
       ? 'news'
@@ -120,7 +127,8 @@ function AppInner() {
     jobs,
     tgChannels,
     selectedChannelId,
-    onRefreshTgChannels: refreshTgChannels,
+    newsRefreshNonce,
+    onRefreshTgChannels: refreshNews,
     selectedBookId,
     onNavigate: handleNavigate,
     onRefresh: refresh,
@@ -143,7 +151,7 @@ function AppInner() {
         tgChannelsLoading={tgChannelsLoading}
         tgChannelsError={tgChannelsError}
         selectedChannelId={selectedChannelId}
-        onRefreshTgChannels={refreshTgChannels}
+        onRefreshTgChannels={refreshNews}
         onSelectBook={handleSelectBook}
         onRefresh={refresh}
         connected={connected}

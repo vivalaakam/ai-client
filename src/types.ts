@@ -104,3 +104,21 @@ export interface TgMessage {
   contentTextText: string | null;
   isPinned: boolean;
 }
+
+export type FeedPostType = 'ad' | 'news' | 'post' | 'meme';
+
+export interface FeedItem {
+  id: string;
+  text: string;
+  isViewed: boolean;
+  postType: FeedPostType | null;
+  firstSeenAt: string;
+  channelId: string;
+  createdAt: string;
+}
+
+export interface FeedSourceMessage {
+  channelId: string;
+  messageId: number;
+  tgLink: string;
+}

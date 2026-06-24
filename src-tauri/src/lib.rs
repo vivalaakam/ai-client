@@ -52,6 +52,30 @@ async fn rpc_with_file(
     res.text().await.map_err(|e| e.to_string())
 }
 
+#[tauri::command]
+async fn open_external_url(url: String) -> Result<(), String> {
+    if !(url.starts_with("https://t.me/") || url.starts_with("tg://")) {
+        return Err("Only Telegram links are allowed".to_string());
+    }
+
+    #[cfg(target_os = "macos")]
+    let mut command = std::process::Command::new("open");
+    #[cfg(target_os = "linux")]
+    let mut command = std::process::Command::new("xdg-open");
+    #[cfg(target_os = "windows")]
+    let mut command = {
+        let mut command = std::process::Command::new("cmd");
+        command.args(["/C", "start", ""]);
+        command
+    };
+
+    command.arg(&url);
+    command
+        .spawn()
+        .map(|_| ())
+        .map_err(|e| format!("failed to open Telegram link: {e}"))
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tracing_subscriber::fmt()
@@ -64,7 +88,7 @@ pub fn run() {
     tracing::info!("Starting AI Translate client → {}", server_url());
 
     tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![rpc_call, rpc_with_file])
+        .invoke_handler(tauri::generate_handler![rpc_call, rpc_with_file, open_external_url])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

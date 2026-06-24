@@ -23,7 +23,8 @@ interface MainContentProps {
   jobs: TranslationJob[];
   tgChannels: TgChannel[];
   selectedChannelId: string | null;
-  onRefreshTgChannels: () => void;
+  newsRefreshNonce: number;
+  onRefreshTgChannels: () => void | Promise<void>;
   onNavigate: (path: string) => void;
   onSelectBook: (bookId: string | null) => void;
   onRefresh: () => void;
@@ -128,6 +129,7 @@ export function MainContent(props: MainContentProps) {
           <NewsFeed
             channels={props.tgChannels}
             selectedChannelId={props.selectedChannelId}
+            refreshNonce={props.newsRefreshNonce}
             onRefreshChannels={props.onRefreshTgChannels}
           />
         </div>
