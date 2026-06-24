@@ -3,22 +3,28 @@ import { useParams } from 'react-router-dom';
 import { DropZone } from './DropZone';
 import { BookDetail } from './BookDetail';
 import { JobsView } from './JobsView';
+import { NewsFeed } from './NewsFeed';
 import { api } from '../api';
 import type {
   BookRecord,
   BookDetail as BookDetailType,
   SystemConfig,
+  TgChannel,
   TranslationJob,
 } from '../types';
 
 interface MainContentProps {
-  view: 'library' | 'detail' | 'jobs';
+  view: 'library' | 'detail' | 'jobs' | 'news';
   selectedBookId?: string | null;
   books: BookRecord[];
   config: SystemConfig;
   models: string[];
   modelsError: boolean;
   jobs: TranslationJob[];
+  tgChannels: TgChannel[];
+  selectedChannelId: string | null;
+  newsRefreshNonce: number;
+  onRefreshTgChannels: () => void | Promise<void>;
   onNavigate: (path: string) => void;
   onSelectBook: (bookId: string | null) => void;
   onRefresh: () => void;
@@ -47,6 +53,17 @@ export function MainContent(props: MainContentProps) {
           </button>
           <span className="breadcrumb-sep">/</span>
           <span className="breadcrumb-item active">⚙️ Jobs</span>
+        </div>
+      );
+    }
+    if (view === 'news') {
+      return (
+        <div className="breadcrumb">
+          <button className="breadcrumb-link" onClick={() => props.onNavigate('/')}>
+            📖 Library
+          </button>
+          <span className="breadcrumb-sep">/</span>
+          <span className="breadcrumb-item active">📰 News</span>
         </div>
       );
     }
@@ -95,6 +112,25 @@ export function MainContent(props: MainContentProps) {
             jobs={props.jobs}
             onRefresh={props.onRefresh}
             onSubscribeJob={props.onSubscribeJob}
+          />
+        </div>
+      </main>
+    );
+  }
+
+  if (view === 'news') {
+    return (
+      <main className="main">
+        <div className="main-header">
+          {renderBreadcrumb()}
+          <span className="main-header-count">Telegram channels</span>
+        </div>
+        <div className="main-content">
+          <NewsFeed
+            channels={props.tgChannels}
+            selectedChannelId={props.selectedChannelId}
+            refreshNonce={props.newsRefreshNonce}
+            onRefreshChannels={props.onRefreshTgChannels}
           />
         </div>
       </main>

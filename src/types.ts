@@ -88,3 +88,37 @@ export interface WSMessage {
   job?: TranslationJob;
   jobs?: TranslationJob[];
 }
+
+export interface TgChannel {
+  id: string;
+  title: string;
+  username: string | null;
+  createdAt: string;
+}
+
+export interface TgMessage {
+  channelId: string;
+  messageId: number;
+  date: string;
+  editDate: string | null;
+  contentTextText: string | null;
+  isPinned: boolean;
+}
+
+export type FeedPostType = 'ad' | 'news' | 'post' | 'meme';
+
+export interface FeedItem {
+  id: string;
+  text: string;
+  isViewed: boolean;
+  postType: FeedPostType | null;
+  firstSeenAt: string;
+  channelId: string;
+  createdAt: string;
+}
+
+export interface FeedSourceMessage {
+  channelId: string;
+  messageId: number;
+  tgLink: string;
+}

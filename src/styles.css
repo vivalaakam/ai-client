@@ -12,6 +12,7 @@
   --yellow: #fdcb6e;
   --blue: #74b9ff;
   --radius: 12px;
+  --activity-w: 52px;
   --sidebar-w: 320px;
 }
 
@@ -45,6 +46,85 @@ button {
   display: flex;
   height: 100vh;
   width: 100vw;
+}
+
+.activity-bar {
+  width: var(--activity-w);
+  min-width: var(--activity-w);
+  background: #151821;
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px 0;
+  gap: 4px;
+}
+
+.activity-item {
+  width: 100%;
+  height: 48px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  color: var(--text2);
+  transition:
+    background 0.15s,
+    color 0.15s;
+}
+
+.activity-item::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 9px;
+  bottom: 9px;
+  width: 2px;
+  border-radius: 0 2px 2px 0;
+  background: transparent;
+}
+
+.activity-item:hover {
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text);
+}
+
+.activity-item.active {
+  color: var(--text);
+}
+
+.activity-item.active::before {
+  background: var(--accent2);
+}
+
+.activity-icon {
+  font-size: 22px;
+  line-height: 1;
+}
+
+.activity-badge {
+  position: absolute;
+  right: 5px;
+  top: 5px;
+  min-width: 17px;
+  height: 17px;
+  padding: 0 5px;
+  border-radius: 9px;
+  background: var(--surface2);
+  color: var(--text);
+  border: 1px solid var(--bg);
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 15px;
+  text-align: center;
+}
+
+.activity-badge.active {
+  background: var(--accent);
+  color: white;
+  animation: pulse 2s infinite;
 }
 
 .sidebar {
@@ -181,6 +261,74 @@ button {
   font-size: 11px;
   color: var(--text2);
   flex-wrap: wrap;
+}
+
+.sidebar-filter-btn {
+  width: 100%;
+  padding: 10px;
+  background: var(--surface2);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  transition:
+    border-color 0.15s,
+    background 0.15s;
+}
+
+.sidebar-filter-btn:hover,
+.sidebar-filter-btn.active {
+  border-color: var(--accent);
+  background: rgba(108, 92, 231, 0.12);
+}
+
+.sidebar-refresh-btn {
+  width: 100%;
+  margin-top: 8px;
+}
+
+.sidebar-error {
+  color: var(--red);
+  font-size: 12px;
+  line-height: 1.35;
+  margin-top: 8px;
+}
+
+.channel-item {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin-bottom: 6px;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+
+.channel-item:hover,
+.channel-item.active {
+  border-color: var(--accent);
+}
+
+.channel-item.active {
+  background: rgba(108, 92, 231, 0.1);
+}
+
+.channel-item-title {
+  font-size: 13px;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.channel-item-meta {
+  color: var(--text2);
+  font-size: 11px;
+  margin-top: 3px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .mini-bar {
@@ -619,6 +767,29 @@ button {
 /* ── Responsive ───────────────────────────────── */
 
 @media (max-width: 768px) {
+  .activity-bar {
+    width: 100%;
+    min-width: 100%;
+    height: 48px;
+    min-height: 48px;
+    flex-direction: row;
+    justify-content: center;
+    padding: 0 8px;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+  .activity-item {
+    width: 52px;
+  }
+  .activity-item::before {
+    left: 10px;
+    right: 10px;
+    top: auto;
+    bottom: 0;
+    width: auto;
+    height: 2px;
+    border-radius: 2px 2px 0 0;
+  }
   .sidebar {
     width: 100%;
     min-width: 100%;
@@ -640,62 +811,7 @@ button {
   }
 }
 
-/* ── Sidebar navigation tabs ──────────────────── */
-
-.sidebar-nav {
-  display: flex;
-  gap: 4px;
-  padding: 8px 12px;
-  border-bottom: 1px solid var(--border);
-}
-
-.nav-tab {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 10px;
-  background: transparent;
-  border: 1px solid transparent;
-  border-radius: 8px;
-  color: var(--text2);
-  font-size: 13px;
-  font-weight: 600;
-  transition: all 0.15s;
-}
-
-.nav-tab:hover {
-  background: var(--surface2);
-  color: var(--text);
-}
-
-.nav-tab.active {
-  background: rgba(108, 92, 231, 0.12);
-  border-color: var(--accent);
-  color: var(--accent2);
-}
-
-.nav-icon {
-  font-size: 14px;
-}
-
-.nav-badge {
-  margin-left: auto;
-  font-size: 10px;
-  font-weight: 700;
-  padding: 2px 7px;
-  border-radius: 20px;
-  background: var(--surface2);
-  color: var(--text2);
-  min-width: 20px;
-  text-align: center;
-}
-
-.nav-badge.active {
-  background: var(--accent);
-  color: white;
-  animation: pulse 2s infinite;
-}
+/* ── Activity badge pulse ─────────────────────── */
 
 @keyframes pulse {
   0%,
@@ -902,4 +1018,210 @@ button {
   padding: 8px 12px;
   background: rgba(225, 112, 85, 0.08);
   border-radius: 6px;
+}
+
+/* ── News feed ────────────────────────────────── */
+
+.news-feed {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.news-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.news-toolbar h2 {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.news-subtitle {
+  color: var(--text2);
+  font-size: 13px;
+  margin-top: 4px;
+}
+
+.channel-tabs {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.channel-tab {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 160px;
+  padding: 10px 12px;
+  text-align: left;
+  transition: border-color 0.15s;
+}
+
+.channel-tab:hover,
+.channel-tab.active {
+  border-color: var(--accent);
+}
+
+.channel-tab small {
+  color: var(--text2);
+  font-size: 11px;
+}
+
+.news-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.news-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+}
+
+.news-card.unread {
+  border-color: var(--accent);
+}
+
+.news-card.viewed {
+  opacity: 0.72;
+}
+
+.news-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.news-channel-title {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.news-date {
+  color: var(--text2);
+  font-size: 12px;
+  margin-top: 2px;
+}
+
+.news-card-actions {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.news-text {
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.55;
+  white-space: pre-wrap;
+}
+
+.inline-error {
+  background: rgba(225, 112, 85, 0.1);
+  border: 1px solid rgba(225, 112, 85, 0.35);
+  border-radius: 8px;
+  color: var(--red);
+  font-size: 13px;
+  padding: 10px 12px;
+}
+
+.news-load-more {
+  display: flex;
+  justify-content: center;
+  padding: 8px 0 16px;
+}
+
+.news-sources-backdrop {
+  align-items: center;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  inset: 0;
+  justify-content: center;
+  padding: 24px;
+  position: fixed;
+  z-index: 50;
+}
+
+.news-sources-modal {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-height: min(640px, calc(100vh - 48px));
+  max-width: 560px;
+  overflow: auto;
+  padding: 18px;
+  width: min(560px, calc(100vw - 48px));
+}
+
+.news-sources-header {
+  align-items: flex-start;
+  display: flex;
+  gap: 16px;
+  justify-content: space-between;
+}
+
+.news-sources-header h3 {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.news-sources-subtitle {
+  color: var(--text2);
+  font-size: 12px;
+  margin-top: 2px;
+}
+
+.news-sources-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.news-source-link {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 12px;
+  text-decoration: none;
+  text-align: left;
+}
+
+.news-source-link:hover,
+.news-source-link:focus-visible {
+  border-color: var(--accent);
+}
+
+.news-source-link span,
+.news-source-link small {
+  overflow-wrap: anywhere;
+}
+
+.news-source-link small {
+  color: var(--text2);
+  font-size: 12px;
 }
