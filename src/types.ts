@@ -122,3 +122,17 @@ export interface FeedSourceMessage {
   messageId: number;
   tgLink: string;
 }
+
+export interface AppConfigEntry {
+  slug: string;
+  value: string;
+}
+
+export interface PromptRecord {
+  id: string;
+  content: string;
+  version: number;
+  tags: string[];
+  previousId: string | null;
+  createdAt?: string;
+}

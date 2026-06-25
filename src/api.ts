@@ -7,6 +7,8 @@ import type {
   FeedItem,
   FeedPostType,
   FeedSourceMessage,
+  AppConfigEntry,
+  PromptRecord,
   TgChannel,
   TgMessage,
 } from './types';
@@ -148,6 +150,19 @@ export const api = {
   feedGet: (id: string) => tgRpc<FeedItem>('feed.get', { id }),
   feedMessages: (id: string) => tgRpc<FeedSourceMessage[]>('feed.getMessages', { id }),
   feedMarkViewed: (id: string) => tgRpc<{ ok: boolean }>('feed.markViewed', { id }),
+  configList: () => tgRpc<AppConfigEntry[]>('config.list'),
+  configGet: (slug: string) => tgRpc<AppConfigEntry>('config.get', { slug }),
+  configSet: (slug: string, value: string) => tgRpc<AppConfigEntry>('config.set', { slug, value }),
+  promptsList: (tags?: string[]) =>
+    tgRpc<PromptRecord[]>('prompts.list', tags && tags.length > 0 ? { tags } : {}),
+  promptsGet: (id: string) => tgRpc<PromptRecord>('prompts.get', { id }),
+  promptsCreate: (content: string, tags: string[]) =>
+    tgRpc<PromptRecord>('prompts.create', { content, tags }),
+  promptsUpdate: (id: string, content: string, tags: string[]) =>
+    tgRpc<PromptRecord>('prompts.update', { id, content, tags }),
+  promptsHistory: (id: string) => tgRpc<PromptRecord[]>('prompts.history', { id }),
+  promptsRender: (id: string, vars: Record<string, string>) =>
+    tgRpc<{ rendered: string }>('prompts.render', { id, vars }),
 };
 
 // ponytail: BASE_URL still used in BookDetail for img/download URLs (browser loads those directly, not via invoke)
