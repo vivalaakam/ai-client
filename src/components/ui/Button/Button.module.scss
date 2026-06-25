@@ -1,0 +1,57 @@
+.button {
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: opacity 0.2s;
+
+  &:hover {
+    opacity: 0.9;
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+}
+
+.md {
+  padding: 12px 20px;
+  font-size: 14px;
+}
+
+.sm {
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 12px;
+
+  &:hover {
+    opacity: 0.8;
+  }
+}
+
+.primary {
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  color: white;
+}
+
+.green {
+  background: var(--green);
+  color: white;
+}
+
+.blue {
+  background: #3b82f6;
+  color: white;
+}
+
+.secondary {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--text);
+}
+
+.danger {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--red);
+}

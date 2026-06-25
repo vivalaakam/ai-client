@@ -1,5 +1,7 @@
 import { useState, useCallback, useRef } from 'react';
-import { api } from '../api';
+import { api } from '../../api';
+import { Card } from '../ui';
+import styles from './DropZone.module.scss';
 
 interface DropZoneProps {
   onUploadStart: (jobId: string) => void;
@@ -50,9 +52,9 @@ export function DropZone({ onUploadStart, onUploadComplete }: DropZoneProps) {
   const labelText = uploading ? 'Uploading and parsing...' : '';
 
   return (
-    <div>
+    <div className={styles.root}>
       <div
-        className={`drop-zone ${dragover ? 'dragover' : ''}`}
+        className={[styles.dropZone, dragover ? styles.dragover : ''].filter(Boolean).join(' ')}
         onDragOver={(e) => {
           e.preventDefault();
           setDragover(true);
@@ -63,8 +65,8 @@ export function DropZone({ onUploadStart, onUploadComplete }: DropZoneProps) {
           if (!uploading) fileInputRef.current?.click();
         }}
       >
-        <div className="icon">{uploading ? '⏳' : '📄'}</div>
-        <div className="label">
+        <div className={styles.icon}>{uploading ? '⏳' : '📄'}</div>
+        <div className={styles.label}>
           {uploading ? (
             labelText
           ) : (
@@ -74,12 +76,12 @@ export function DropZone({ onUploadStart, onUploadComplete }: DropZoneProps) {
             </span>
           )}
         </div>
-        <div className="hint">Supported formats: .epub, .fb2, .pdf</div>
+        <div className={styles.hint}>Supported formats: .epub, .fb2, .pdf</div>
         <input
           ref={fileInputRef}
           type="file"
           accept=".epub,.fb2,.pdf"
-          style={{ display: 'none' }}
+          className={styles.fileInput}
           onChange={(e) => {
             if (e.target.files && e.target.files.length) handleFile(e.target.files[0]);
           }}
@@ -87,9 +89,9 @@ export function DropZone({ onUploadStart, onUploadComplete }: DropZoneProps) {
       </div>
 
       {error && (
-        <div className="card" style={{ borderColor: 'var(--red)', marginTop: 16 }}>
-          <p style={{ color: 'var(--red)', fontSize: 14 }}>{error}</p>
-        </div>
+        <Card className={styles.errorCard}>
+          <p className={styles.errorText}>{error}</p>
+        </Card>
       )}
     </div>
   );

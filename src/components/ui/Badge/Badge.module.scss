@@ -1,0 +1,31 @@
+.badge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 2px 8px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.queued {
+  background: rgba(253, 203, 110, 0.14);
+  color: var(--yellow);
+}
+
+.parsing,
+.translating,
+.assembling {
+  background: rgba(162, 155, 254, 0.14);
+  color: var(--accent2);
+}
+
+.completed {
+  background: rgba(0, 184, 148, 0.14);
+  color: var(--green);
+}
+
+.failed {
+  background: rgba(225, 112, 85, 0.14);
+  color: var(--red);
+}
