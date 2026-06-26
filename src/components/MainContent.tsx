@@ -1,17 +1,14 @@
-import { useState, useCallback, useEffect } from 'react';
-import { Alert, Breadcrumb, Button, Card, Progress, Space, Tag, Typography } from 'antd';
+import { Breadcrumb, Button } from 'antd';
 import { ArrowLeftOutlined } from '@ant-design/icons';
-import { useParams } from 'react-router-dom';
 import { DropZone } from './DropZone';
-import { BookDetail } from './BookDetail';
 import { JobsView } from './JobsView';
 import { NewsFeed } from './NewsFeed';
 import { ConfigView } from './ConfigView';
 import { PromptsView } from './PromptsView';
-import { api } from '../api';
+import { BookCard } from './BookCard';
+import { BookDetailView } from './BookDetailView';
 import type {
   BookRecord,
-  BookDetail as BookDetailType,
   AppConfigEntry,
   PromptRecord,
   SystemConfig,
@@ -210,132 +207,5 @@ export function MainContent(props: MainContentProps) {
         )}
       </div>
     </main>
-  );
-}
-
-// ── Book card for library grid ───────────────────
-
-function BookCard({ book, onClick }: { book: BookRecord; onClick: () => void }) {
-  const total = book.totalBlocks || 0;
-  const translated = book.translatedBlocks || 0;
-  const pct = total > 0 ? Math.round((translated / total) * 100) : 0;
-  const isComplete = book.completedAt !== null;
-  const isTranslating = translated > 0 && !isComplete;
-  const isParsing = book.status === 'parsing';
-  const parsePct = book.totalPages > 0 ? Math.round((book.parsedPages / book.totalPages) * 100) : 0;
-  const ext = book.filename?.split('.').pop()?.toUpperCase() || '?';
-
-  return (
-    <Card
-      className={`book-card ${isComplete ? 'completed' : ''}`}
-      hoverable
-      onClick={onClick}
-      size="small"
-    >
-      <div className="book-card-top">
-        <div className="book-card-format">{ext}</div>
-        {isComplete ? (
-          <Tag color="green">done</Tag>
-        ) : isParsing ? (
-          <Tag color="purple">parsing {parsePct}%</Tag>
-        ) : isTranslating ? (
-          <Tag color="blue">{pct}%</Tag>
-        ) : (
-          <Tag color="gold">parsed</Tag>
-        )}
-      </div>
-      <Typography.Title level={5} className="book-card-title">
-        {book.title || book.filename}
-      </Typography.Title>
-      <Typography.Text type="secondary" className="book-card-author">
-        {book.author || 'Unknown author'}
-      </Typography.Text>
-      <Space wrap size={[8, 4]} className="book-card-stats">
-        <span>📄 {total}</span>
-        <span>✅ {translated}</span>
-        <span>🌍 {book.language || '?'}</span>
-        {book.targetLang && <span>→ {book.targetLang}</span>}
-      </Space>
-      {(translated > 0 || isParsing) && (
-        <Progress
-          percent={isParsing ? parsePct : pct}
-          showInfo={false}
-          status={isComplete ? 'success' : 'active'}
-        />
-      )}
-    </Card>
-  );
-}
-
-// ── Book detail with data fetching ───────────────
-
-function BookDetailView({
-  config,
-  models,
-  modelsError,
-  onRefresh,
-  onSubscribeJob,
-  onBack,
-}: {
-  config: SystemConfig;
-  models: string[];
-  modelsError: boolean;
-  onRefresh: () => void;
-  onSubscribeJob: (jobId: string) => void;
-  onBack: () => void;
-}) {
-  const { bookId } = useParams<{ bookId: string }>();
-  const [detail, setDetail] = useState<BookDetailType | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  const load = useCallback(async () => {
-    if (!bookId) return;
-    try {
-      const d = await api.bookGet(bookId);
-      setDetail(d);
-      setError(null);
-    } catch (err: any) {
-      setError(err.message || 'Failed to load book');
-    } finally {
-      setLoading(false);
-    }
-  }, [bookId]);
-
-  useEffect(() => {
-    setLoading(true);
-    load();
-  }, [load]);
-
-  if (loading && !detail) {
-    return <Card loading />;
-  }
-
-  if (error) {
-    return (
-      <Space direction="vertical">
-        <Alert message={error} type="error" showIcon />
-        <Button icon={<ArrowLeftOutlined />} onClick={onBack}>
-          Back
-        </Button>
-      </Space>
-    );
-  }
-
-  if (!detail) return null;
-
-  return (
-    <BookDetail
-      detail={detail}
-      config={config}
-      models={models}
-      modelsError={modelsError}
-      onRefresh={() => {
-        onRefresh();
-        load();
-      }}
-      onSubscribeJob={onSubscribeJob}
-      onDelete={onBack}
-    />
   );
 }
