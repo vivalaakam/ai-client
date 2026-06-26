@@ -70,9 +70,8 @@ button {
   background: transparent;
   border: none;
   color: var(--text2);
-  transition:
-    background 0.15s,
-    color 0.15s;
+  transition: background 0.15s,
+  color 0.15s;
 }
 
 .activity-item::before {
@@ -172,6 +171,7 @@ button {
   font-weight: 600;
   transition: opacity 0.2s;
 }
+
 .upload-btn:hover {
   opacity: 0.9;
 }
@@ -191,9 +191,11 @@ button {
   border-radius: 50%;
   background: var(--text2);
 }
+
 .api-dot.ok {
   background: var(--green);
 }
+
 .api-dot.err {
   background: var(--red);
 }
@@ -215,16 +217,20 @@ button {
   cursor: pointer;
   transition: border-color 0.15s;
 }
+
 .book-item:hover {
   border-color: var(--accent);
 }
+
 .book-item.active {
   border-color: var(--accent);
   background: rgba(108, 92, 231, 0.1);
 }
+
 .book-item.completed {
   border-color: var(--green);
 }
+
 .book-item.translating {
   border-color: var(--accent2);
 }
@@ -272,9 +278,8 @@ button {
   border-radius: 8px;
   font-size: 14px;
   font-weight: 600;
-  transition:
-    border-color 0.15s,
-    background 0.15s;
+  transition: border-color 0.15s,
+  background 0.15s;
 }
 
 .sidebar-filter-btn:hover,
@@ -338,12 +343,14 @@ button {
   overflow: hidden;
   margin-top: 6px;
 }
+
 .mini-bar-fill {
   height: 100%;
   border-radius: 2px;
   background: linear-gradient(90deg, var(--accent), var(--accent2));
   transition: width 0.3s;
 }
+
 .mini-bar-fill.completed {
   background: var(--green);
 }
@@ -359,30 +366,37 @@ button {
   letter-spacing: 0.5px;
   white-space: nowrap;
 }
+
 .badge.queued {
   background: var(--surface2);
   color: var(--text2);
 }
+
 .badge.parsing {
   background: rgba(253, 203, 110, 0.15);
   color: var(--yellow);
 }
+
 .badge.translating {
   background: rgba(108, 92, 231, 0.15);
   color: var(--accent2);
 }
+
 .badge.assembling {
   background: rgba(253, 203, 110, 0.15);
   color: var(--yellow);
 }
+
 .badge.completed {
   background: rgba(0, 184, 148, 0.15);
   color: var(--green);
 }
+
 .badge.failed {
   background: rgba(225, 112, 85, 0.15);
   color: var(--red);
 }
+
 .badge.queued {
   background: var(--surface2);
   color: var(--text2);
@@ -443,6 +457,7 @@ button {
   flex-direction: column;
   gap: 6px;
 }
+
 .form-group.full {
   grid-column: 1 / -1;
 }
@@ -467,12 +482,14 @@ button {
   outline: none;
   transition: border-color 0.2s;
 }
+
 .form-group textarea {
   font-family: inherit;
   line-height: 1.5;
   min-height: 120px;
   resize: vertical;
 }
+
 .form-group select:focus,
 .form-group input:focus,
 .form-group textarea:focus {
@@ -496,9 +513,11 @@ button {
   font-weight: 600;
   transition: opacity 0.2s;
 }
+
 .btn:hover {
   opacity: 0.9;
 }
+
 .btn:disabled {
   opacity: 0.4;
   cursor: not-allowed;
@@ -508,19 +527,23 @@ button {
   background: linear-gradient(135deg, var(--accent), var(--accent2));
   color: white;
 }
+
 .btn-green {
   background: var(--green);
   color: white;
 }
+
 .btn-blue {
   background: #3b82f6;
   color: white;
 }
+
 .btn-secondary {
   background: var(--surface2);
   border: 1px solid var(--border);
   color: var(--text);
 }
+
 .btn-danger {
   background: var(--surface2);
   border: 1px solid var(--border);
@@ -535,6 +558,7 @@ button {
   font-weight: 600;
   transition: opacity 0.2s;
 }
+
 .btn-sm:hover {
   opacity: 0.8;
 }
@@ -553,15 +577,18 @@ button {
   border-radius: 3px;
   overflow: hidden;
 }
+
 .progress-fill {
   height: 100%;
   border-radius: 3px;
   background: linear-gradient(90deg, var(--accent), var(--accent2));
   transition: width 0.3s ease;
 }
+
 .progress-fill.completed {
   background: var(--green);
 }
+
 .progress-fill.failed {
   background: var(--red);
 }
@@ -596,6 +623,7 @@ button {
   margin-bottom: 16px;
   flex-wrap: wrap;
 }
+
 .detail-meta span {
   display: flex;
   align-items: center;
@@ -610,6 +638,7 @@ button {
   margin-bottom: 12px;
   flex-wrap: wrap;
 }
+
 .detail-stats span {
   display: flex;
   align-items: center;
@@ -631,9 +660,11 @@ button {
   font-size: 13px;
   border-bottom: 1px solid var(--border);
 }
+
 .chapter-row:last-child {
   border-bottom: none;
 }
+
 .chapter-name {
   color: var(--text2);
   flex: 1;
@@ -642,6 +673,7 @@ button {
   white-space: nowrap;
   margin-right: 12px;
 }
+
 .chapter-progress {
   color: var(--text2);
   white-space: nowrap;
@@ -656,9 +688,11 @@ button {
   grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
   gap: 8px;
 }
+
 .images-grid .img-item {
   text-align: center;
 }
+
 .images-grid img {
   max-width: 100%;
   max-height: 100px;
@@ -667,6 +701,7 @@ button {
   background: var(--surface2);
   padding: 4px;
 }
+
 .images-grid .img-size {
   font-size: 11px;
   color: var(--text2);
@@ -1247,49 +1282,6 @@ button {
   text-align: left;
   transition: border-color 0.15s;
   width: 100%;
-}
-
-.config-item {
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  color: var(--text);
-  cursor: pointer;
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-  margin-bottom: 6px;
-  padding: 10px 12px;
-  text-align: left;
-  transition: border-color 0.15s;
-  width: 100%;
-}
-
-.config-item:hover,
-.config-item.active {
-  border-color: var(--accent);
-}
-
-.config-item.active {
-  background: rgba(108, 92, 231, 0.1);
-}
-
-.config-item-slug {
-  font-size: 13px;
-  font-weight: 700;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.config-item-value {
-  color: var(--text2);
-  display: -webkit-box;
-  font-size: 11px;
-  overflow: hidden;
-  overflow-wrap: anywhere;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 3;
 }
 
 .prompt-item:hover,

@@ -1,4 +1,7 @@
-import type { AppConfigEntry, BookRecord, PromptRecord, TgChannel } from '../types';
+import type { AppConfigEntry, BookRecord, PromptRecord, TgChannel } from '../../types.ts';
+import { ConfigListItem } from './ConfigListItem.tsx';
+import { ChannelListItem } from './ChannelListItem.tsx';
+import { PromptListItem } from './PromptListItem.tsx';
 
 interface SidebarProps {
   books: BookRecord[];
@@ -240,23 +243,6 @@ function ConfigSidebar({
   );
 }
 
-function ConfigListItem({
-  entry,
-  active,
-  onClick,
-}: {
-  entry: AppConfigEntry;
-  active: boolean;
-  onClick: () => void;
-}) {
-  return (
-    <button className={`config-item ${active ? 'active' : ''}`} onClick={onClick}>
-      <div className="config-item-slug">{entry.slug}</div>
-      <div className="config-item-value">{entry.value || 'Empty value'}</div>
-    </button>
-  );
-}
-
 function PromptsSidebar({
   prompts,
   loading,
@@ -306,35 +292,6 @@ function PromptsSidebar({
   );
 }
 
-function PromptListItem({
-  prompt,
-  active,
-  onClick,
-}: {
-  prompt: PromptRecord;
-  active: boolean;
-  onClick: () => void;
-}) {
-  const title = prompt.tags[0] || firstLine(prompt.content) || prompt.id;
-  return (
-    <button className={`prompt-item ${active ? 'active' : ''}`} onClick={onClick}>
-      <div className="prompt-item-top">
-        <span>{title}</span>
-        <small>v{prompt.version}</small>
-      </div>
-      <div className="prompt-item-preview">{firstLine(prompt.content) || 'Empty prompt'}</div>
-      {prompt.tags.length > 0 && <div className="prompt-item-tags">{prompt.tags.join(', ')}</div>}
-    </button>
-  );
-}
-
-function firstLine(value: string) {
-  return value
-    .split('\n')
-    .map((line) => line.trim())
-    .find(Boolean);
-}
-
 function NewsSidebar({
   channels,
   loading,
@@ -382,25 +339,6 @@ function NewsSidebar({
         )}
       </div>
     </>
-  );
-}
-
-function ChannelListItem({
-  channel,
-  active,
-  onClick,
-}: {
-  channel: TgChannel;
-  active: boolean;
-  onClick: () => void;
-}) {
-  return (
-    <div className={`channel-item ${active ? 'active' : ''}`} onClick={onClick}>
-      <div className="channel-item-title">{channel.title}</div>
-      <div className="channel-item-meta">
-        {channel.username ? `@${channel.username}` : channel.id}
-      </div>
-    </div>
   );
 }
 

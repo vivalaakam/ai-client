@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
-import { Sidebar } from './components/Sidebar';
+import { Sidebar } from './components/Sidebar/Sidebar.tsx';
 import { MainContent } from './components/MainContent';
 import { UploadOverlay } from './components/UploadOverlay';
 import { useWebSocket } from './hooks/useWebSocket';
