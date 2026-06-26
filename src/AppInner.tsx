@@ -13,7 +13,6 @@ import { api } from './api';
 import { SidebarList } from './components/Sidebar/SidebarList.tsx';
 import { BookListItem } from './components/Sidebar/BookListItem.tsx';
 import { ChannelListItem } from './components/Sidebar/ChannelListItem.tsx';
-import { ConfigListItem } from './components/Sidebar/ConfigListItem.tsx';
 import { UploadOverlay } from './components/UploadOverlay';
 import { useBooks, useConfig, useModels } from './hooks/useBooks';
 import { useWebSocket } from './hooks/useWebSocket';
@@ -22,8 +21,11 @@ import { BookDetailPage } from './pages/BookDetailPage';
 import { NewsPage } from './pages/NewsPage';
 import { JobsPage } from './pages/JobsPage';
 import { ConfigPage } from './pages/ConfigPage';
-import type { AppConfigEntry, TgChannel, TranslationJob } from './types';
+import { ConfigViewPage } from './pages/ConfigViewPage.tsx';
+import { ConfigNewPage } from './pages/ConfigNewPage.tsx';
+import type { TgChannel, TranslationJob } from './types';
 import { PromptsView } from './components/PromptsView';
+import { ConfigsView } from './components/ConfigsView';
 import { PromptViewPage } from './pages/PromptViewPage.tsx';
 import { PromptNewPage } from './pages/PromptNewPage.tsx';
 import { PromptsList } from './pages/PromptsList.tsx';
@@ -39,10 +41,6 @@ export function AppInner() {
   const [tgChannelsLoading, setTgChannelsLoading] = useState(false);
   const [tgChannelsError, setTgChannelsError] = useState<string | null>(null);
   const [newsRefreshNonce, setNewsRefreshNonce] = useState(0);
-  const [configEntries, setConfigEntries] = useState<AppConfigEntry[]>([]);
-  const [configEntriesLoading, setConfigEntriesLoading] = useState(false);
-  const [configEntriesError, setConfigEntriesError] = useState<string | null>(null);
-  const [selectedConfigSlug, setSelectedConfigSlug] = useState<string | null>(null);
 
   console.log('appInner rendered');
 
@@ -108,27 +106,10 @@ export function AppInner() {
     setNewsRefreshNonce((nonce) => nonce + 1);
   }, [refreshTgChannels]);
 
-  const refreshConfigEntries = useCallback(async () => {
-    setConfigEntriesLoading(true);
-    try {
-      const data = await api.configList();
-      setConfigEntries(data);
-      setConfigEntriesError(null);
-      setSelectedConfigSlug((current) => {
-        if (current === null || data.some((entry) => entry.slug === current)) return current;
-        return data[0]?.slug ?? null;
-      });
-    } catch (err) {
-      setConfigEntriesError(err instanceof Error ? err.message : 'Failed to load config');
-    } finally {
-      setConfigEntriesLoading(false);
-    }
-  }, []);
-
   const view =
     location.pathname === '/news'
       ? 'news'
-      : location.pathname === '/config'
+      : location.pathname.startsWith('/config')
         ? 'config'
         : location.pathname.startsWith('/prompts')
           ? 'prompts'
@@ -148,14 +129,8 @@ export function AppInner() {
     }
   }, [refreshTgChannels, tgChannels.length, tgChannelsLoading, view]);
 
-  useEffect(() => {
-    if (view === 'config' && configEntries.length === 0 && !configEntriesLoading) {
-      refreshConfigEntries();
-    }
-  }, [configEntries.length, configEntriesLoading, refreshConfigEntries, view]);
-
   const sidebarContent = (() => {
-    if (view === 'prompts') {
+    if (view === 'prompts' || view === 'config') {
       return null;
     }
     if (view === 'news') {
@@ -187,34 +162,6 @@ export function AppInner() {
         />
       );
     }
-    if (view === 'config') {
-      return (
-        <SidebarList
-          items={configEntries}
-          renderItem={(entry) => (
-            <ConfigListItem
-              entry={entry}
-              active={entry.slug === selectedConfigSlug}
-              onClick={() => {
-                setSelectedConfigSlug(entry.slug);
-                navigate('/config');
-              }}
-            />
-          )}
-          keyExtractor={(entry) => entry.slug}
-          onNew={() => {
-            setSelectedConfigSlug(null);
-            navigate('/config');
-          }}
-          newLabel="New config"
-          onRefresh={refreshConfigEntries}
-          loading={configEntriesLoading}
-          error={configEntriesError}
-          emptyText="No config entries yet"
-        />
-      );
-    }
-
     // library / detail / jobs
     return (
       <SidebarList
@@ -333,19 +280,11 @@ export function AppInner() {
             />
           }
         />
-        <Route
-          path="/config"
-          element={
-            <ConfigPage
-              entries={configEntries}
-              loading={configEntriesLoading}
-              error={configEntriesError}
-              selectedSlug={selectedConfigSlug}
-              onSelectEntry={setSelectedConfigSlug}
-              onRefresh={refreshConfigEntries}
-            />
-          }
-        />
+        <Route path="/config" Component={ConfigPage}>
+          <Route index Component={ConfigsView} />
+          <Route path="new" Component={ConfigNewPage} />
+          <Route path=":slug" Component={ConfigViewPage} />
+        </Route>
         <Route path="/prompts" Component={PromptsList}>
           <Route index Component={PromptsView} />
           <Route path="new" Component={PromptNewPage} />

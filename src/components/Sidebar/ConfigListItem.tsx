@@ -9,5 +9,5 @@ export interface ConfigListItemProps {
 }
 
 export const ConfigListItem: FC<ConfigListItemProps> = ({ entry, active, onClick }) => {
-  return <RowItem value={entry.value} head={entry.slug} isActive={active} onClick={onClick} />;
+  return <RowItem head={entry.slug} isActive={active} onClick={onClick} />;
 };

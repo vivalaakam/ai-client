@@ -1,44 +1,43 @@
-import { Link } from 'react-router';
-import { Breadcrumb } from 'antd';
-import { ConfigView } from '../components/ConfigView';
-import type { AppConfigEntry } from '../types';
+import { Outlet, useLocation, useNavigate } from 'react-router';
+import { ConfigListItem, SidebarList } from '../components/Sidebar';
+import { useQuery } from '@tanstack/react-query';
+import { api } from '../api.ts';
+import Sider from 'antd/es/layout/Sider';
+import { Content } from 'antd/es/layout/layout';
 
-interface ConfigPageProps {
-  entries: AppConfigEntry[];
-  loading: boolean;
-  error: string | null;
-  selectedSlug: string | null;
-  onSelectEntry: (slug: string | null) => void;
-  onRefresh: () => void | Promise<void>;
-}
+export function ConfigPage() {
+  const navigate = useNavigate();
+  const location = useLocation();
 
-export function ConfigPage({
-  entries,
-  loading,
-  error,
-  selectedSlug,
-  onSelectEntry,
-  onRefresh,
-}: ConfigPageProps) {
+  const { data: entries, isPending, error, refetch } = useQuery({
+    queryKey: ['config'],
+    queryFn: () => api.configList(),
+  });
+
   return (
-    <main className="main">
-      <div className="main-header">
-        <Breadcrumb
-          className="breadcrumb"
-          items={[{ title: <Link to="/">Library</Link> }, { title: 'Config' }]}
-        />
-        <span className="main-header-count">{selectedSlug ? 'Editing config' : 'New config'}</span>
-      </div>
-      <div className="main-content prompt-main-content">
-        <ConfigView
-          entries={entries}
-          loading={loading}
+    <>
+      <Sider width={300}>
+        <SidebarList
+          items={entries ?? []}
+          renderItem={(entry) => (
+            <ConfigListItem
+              entry={entry}
+              active={location.pathname === `/config/${entry.slug}`}
+              onClick={() => navigate(`/config/${entry.slug}`)}
+            />
+          )}
+          keyExtractor={(entry) => entry.slug}
+          onNew={() => navigate('/config/new')}
+          newLabel="New config"
+          onRefresh={refetch}
+          loading={isPending}
           error={error}
-          selectedSlug={selectedSlug}
-          onSelectEntry={onSelectEntry}
-          onRefreshEntries={onRefresh}
+          emptyText="No config entries yet"
         />
-      </div>
-    </main>
+      </Sider>
+      <Content>
+        <Outlet />
+      </Content>
+    </>
   );
 }
