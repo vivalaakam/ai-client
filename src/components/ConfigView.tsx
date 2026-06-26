@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Alert, Button, Card, Form, Input, Space, Typography } from 'antd';
+import { PlusOutlined, SaveOutlined } from '@ant-design/icons';
 import { api } from '../api';
 import type { AppConfigEntry } from '../types';
 
@@ -55,48 +57,61 @@ export function ConfigView({
   }, [onRefreshEntries, onSelectEntry, selected?.slug, slug, value]);
 
   if (loading && entries.length === 0) {
-    return <div className="empty-state">Loading config…</div>;
+    return <Card loading />;
   }
 
   return (
     <section className="config-editor-page">
-      {(error || localError) && <div className="inline-error">{localError ?? error}</div>}
-
-      <div className="prompt-editor-header">
-        <div>
-          <h2>{selected ? selected.slug : 'New config'}</h2>
-          <div className="news-subtitle">Key/value settings from ai-tg-channels</div>
-        </div>
-        <div className="prompt-editor-actions">
-          <button className="btn btn-secondary btn-sm" onClick={() => onSelectEntry(null)}>
-            New
-          </button>
-          <button className="btn btn-primary btn-sm" onClick={save} disabled={saving}>
-            {saving ? 'Saving…' : 'Save'}
-          </button>
-        </div>
-      </div>
-
-      <div className="config-editor-form">
-        <div className="form-group">
-          <label>Slug</label>
-          <input
-            value={slug}
-            onChange={(event) => setSlug(event.target.value)}
-            disabled={!isNew}
-            readOnly={!isNew}
+      <Card
+        title={
+          <Space direction="vertical" size={0}>
+            <Typography.Title level={3}>{selected ? selected.slug : 'New config'}</Typography.Title>
+            <Typography.Text type="secondary">
+              Key/value settings from ai-tg-channels
+            </Typography.Text>
+          </Space>
+        }
+        extra={
+          <Space>
+            <Button icon={<PlusOutlined />} onClick={() => onSelectEntry(null)}>
+              New
+            </Button>
+            <Button icon={<SaveOutlined />} loading={saving} type="primary" onClick={save}>
+              Save
+            </Button>
+          </Space>
+        }
+      >
+        {(error || localError) && (
+          <Alert
+            className="prompt-editor-alert"
+            message={localError ?? error}
+            type="error"
+            showIcon
           />
-        </div>
-        <div className="form-group config-value-group">
-          <label>Value</label>
-          <textarea
-            className="config-value-textarea"
-            value={value}
-            onChange={(event) => setValue(event.target.value)}
-            spellCheck={false}
-          />
-        </div>
-      </div>
+        )}
+
+        <Form layout="vertical" className="config-editor-form">
+          <Form.Item label="Slug" required validateStatus={!slug.trim() && isNew ? 'error' : ''}>
+            <Input
+              value={slug}
+              onChange={(event) => setSlug(event.target.value)}
+              disabled={!isNew}
+              readOnly={!isNew}
+              placeholder="config.slug"
+            />
+          </Form.Item>
+          <Form.Item label="Value" className="config-value-group">
+            <Input.TextArea
+              className="config-value-textarea"
+              value={value}
+              onChange={(event) => setValue(event.target.value)}
+              spellCheck={false}
+              autoSize={{ minRows: 16 }}
+            />
+          </Form.Item>
+        </Form>
+      </Card>
     </section>
   );
 }

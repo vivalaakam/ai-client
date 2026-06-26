@@ -1,6 +1,7 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback } from 'react';
+import { Alert, Upload } from 'antd';
+import { FileAddOutlined, LoadingOutlined } from '@ant-design/icons';
 import { api } from '../../api';
-import { Card } from '../ui';
 import styles from './DropZone.module.scss';
 
 interface DropZoneProps {
@@ -9,10 +10,8 @@ interface DropZoneProps {
 }
 
 export function DropZone({ onUploadStart, onUploadComplete }: DropZoneProps) {
-  const [dragover, setDragover] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFile = useCallback(
     async (file: File) => {
@@ -36,36 +35,28 @@ export function DropZone({ onUploadStart, onUploadComplete }: DropZoneProps) {
     [onUploadStart, onUploadComplete]
   );
 
-  const handleDrop = useCallback(
-    (e: React.DragEvent) => {
-      e.preventDefault();
-      setDragover(false);
-      if (e.dataTransfer.files.length) {
-        handleFile(e.dataTransfer.files[0]);
-      }
-    },
-    [handleFile]
-  );
-
   const labelClick = !uploading ? 'Click to upload' : '';
   const labelDrag = !uploading ? ' or drag and drop your EPUB/FB2/PDF file' : '';
   const labelText = uploading ? 'Uploading and parsing...' : '';
+  const Icon = uploading ? LoadingOutlined : FileAddOutlined;
 
   return (
     <div className={styles.root}>
-      <div
-        className={[styles.dropZone, dragover ? styles.dragover : ''].filter(Boolean).join(' ')}
-        onDragOver={(e) => {
-          e.preventDefault();
-          setDragover(true);
+      <Upload.Dragger
+        accept=".epub,.fb2,.pdf"
+        disabled={uploading}
+        fileList={[]}
+        multiple={false}
+        showUploadList={false}
+        beforeUpload={(file) => {
+          handleFile(file);
+          return false;
         }}
-        onDragLeave={() => setDragover(false)}
-        onDrop={handleDrop}
-        onClick={() => {
-          if (!uploading) fileInputRef.current?.click();
-        }}
+        className={styles.dropZone}
       >
-        <div className={styles.icon}>{uploading ? '⏳' : '📄'}</div>
+        <div className={styles.icon}>
+          <Icon spin={uploading} />
+        </div>
         <div className={styles.label}>
           {uploading ? (
             labelText
@@ -77,22 +68,9 @@ export function DropZone({ onUploadStart, onUploadComplete }: DropZoneProps) {
           )}
         </div>
         <div className={styles.hint}>Supported formats: .epub, .fb2, .pdf</div>
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept=".epub,.fb2,.pdf"
-          className={styles.fileInput}
-          onChange={(e) => {
-            if (e.target.files && e.target.files.length) handleFile(e.target.files[0]);
-          }}
-        />
-      </div>
+      </Upload.Dragger>
 
-      {error && (
-        <Card className={styles.errorCard}>
-          <p className={styles.errorText}>{error}</p>
-        </Card>
-      )}
+      {error && <Alert className={styles.errorCard} message={error} type="error" showIcon />}
     </div>
   );
 }

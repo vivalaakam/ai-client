@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
+import { App as AntApp, ConfigProvider, theme } from 'antd';
 import { BrowserRouter, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { Sidebar } from './components/Sidebar/Sidebar.tsx';
 import { MainContent } from './components/MainContent';
@@ -10,9 +11,22 @@ import type { AppConfigEntry, PromptRecord, TgChannel, TranslationJob } from './
 
 export function App() {
   return (
-    <BrowserRouter>
-      <AppInner />
-    </BrowserRouter>
+    <ConfigProvider
+      theme={{
+        algorithm: theme.darkAlgorithm,
+        token: {
+          colorPrimary: '#6c5ce7',
+          borderRadius: 8,
+          fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+        },
+      }}
+    >
+      <AntApp>
+        <BrowserRouter>
+          <AppInner />
+        </BrowserRouter>
+      </AntApp>
+    </ConfigProvider>
   );
 }
 

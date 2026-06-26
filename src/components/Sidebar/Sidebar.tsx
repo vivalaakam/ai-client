@@ -1,3 +1,13 @@
+import { Badge, Button, Progress, Tag, Tooltip } from 'antd';
+import {
+  BookOutlined,
+  CloudUploadOutlined,
+  FormOutlined,
+  ReadOutlined,
+  ReloadOutlined,
+  SettingOutlined,
+  ToolOutlined,
+} from '@ant-design/icons';
 import type { AppConfigEntry, BookRecord, PromptRecord, TgChannel } from '../../types.ts';
 import { ConfigListItem } from './ConfigListItem.tsx';
 import { ChannelListItem } from './ChannelListItem.tsx';
@@ -75,53 +85,67 @@ export function Sidebar({
   return (
     <>
       <nav className="activity-bar" aria-label="Primary navigation">
-        <button
-          className={`activity-item ${currentView === 'library' || currentView === 'detail' ? 'active' : ''}`}
-          onClick={() => onNavigate('/')}
-          title="Library"
-          aria-label="Library"
-        >
-          <span className="activity-icon">📖</span>
-          {books.length > 0 && <span className="activity-badge">{books.length}</span>}
-        </button>
-        <button
-          className={`activity-item ${currentView === 'news' ? 'active' : ''}`}
-          onClick={() => onNavigate('/news')}
-          title="News"
-          aria-label="News"
-        >
-          <span className="activity-icon">📰</span>
-        </button>
-        <button
-          className={`activity-item ${currentView === 'jobs' ? 'active' : ''}`}
-          onClick={() => onNavigate('/jobs')}
-          title="Jobs"
-          aria-label="Jobs"
-        >
-          <span className="activity-icon">⚙️</span>
-          {activeCount > 0 && <span className="activity-badge active">{activeCount}</span>}
-        </button>
-        <button
-          className={`activity-item ${currentView === 'config' ? 'active' : ''}`}
-          onClick={() => onNavigate('/config')}
-          title="Config"
-          aria-label="Config"
-        >
-          <span className="activity-icon">🔧</span>
-        </button>
-        <button
-          className={`activity-item ${currentView === 'prompts' ? 'active' : ''}`}
-          onClick={() => onNavigate('/prompts')}
-          title="Prompts"
-          aria-label="Prompts"
-        >
-          <span className="activity-icon">✍️</span>
-        </button>
+        <Tooltip title="Library" placement="right">
+          <Button
+            className={`activity-item ${currentView === 'library' || currentView === 'detail' ? 'active' : ''}`}
+            onClick={() => onNavigate('/')}
+            aria-label="Library"
+            type="text"
+          >
+            <Badge count={books.length} size="small" offset={[5, -3]}>
+              <BookOutlined className="activity-icon" />
+            </Badge>
+          </Button>
+        </Tooltip>
+        <Tooltip title="News" placement="right">
+          <Button
+            className={`activity-item ${currentView === 'news' ? 'active' : ''}`}
+            onClick={() => onNavigate('/news')}
+            aria-label="News"
+            type="text"
+          >
+            <ReadOutlined className="activity-icon" />
+          </Button>
+        </Tooltip>
+        <Tooltip title="Jobs" placement="right">
+          <Button
+            className={`activity-item ${currentView === 'jobs' ? 'active' : ''}`}
+            onClick={() => onNavigate('/jobs')}
+            aria-label="Jobs"
+            type="text"
+          >
+            <Badge count={activeCount} size="small" offset={[5, -3]}>
+              <SettingOutlined className="activity-icon" />
+            </Badge>
+          </Button>
+        </Tooltip>
+        <Tooltip title="Config" placement="right">
+          <Button
+            className={`activity-item ${currentView === 'config' ? 'active' : ''}`}
+            onClick={() => onNavigate('/config')}
+            aria-label="Config"
+            type="text"
+          >
+            <ToolOutlined className="activity-icon" />
+          </Button>
+        </Tooltip>
+        <Tooltip title="Prompts" placement="right">
+          <Button
+            className={`activity-item ${currentView === 'prompts' ? 'active' : ''}`}
+            onClick={() => onNavigate('/prompts')}
+            aria-label="Prompts"
+            type="text"
+          >
+            <FormOutlined className="activity-icon" />
+          </Button>
+        </Tooltip>
       </nav>
 
       <aside className="sidebar">
         <div className="sidebar-header">
-          <h1>📚 AI Translate</h1>
+          <h1>
+            <BookOutlined /> AI Translate
+          </h1>
           <div className="subtitle">Books, articles & news</div>
         </div>
 
@@ -157,9 +181,14 @@ export function Sidebar({
         ) : (
           <>
             <div className="sidebar-upload">
-              <button className="upload-btn" onClick={onUploadClick}>
-                ⬆ Upload Book/Article
-              </button>
+              <Button
+                className="upload-btn"
+                icon={<CloudUploadOutlined />}
+                onClick={onUploadClick}
+                type="primary"
+              >
+                Upload Book/Article
+              </Button>
               <div className="api-status">
                 <div className={`api-dot ${modelsError ? 'err' : 'ok'}`} />
                 <span>
@@ -215,12 +244,17 @@ function ConfigSidebar({
   return (
     <>
       <div className="sidebar-upload">
-        <button className="upload-btn" onClick={onCreate}>
-          + New config
-        </button>
-        <button className="btn btn-secondary btn-sm sidebar-refresh-btn" onClick={onRefresh}>
+        <Button className="upload-btn" onClick={onCreate} type="primary">
+          New config
+        </Button>
+        <Button
+          className="sidebar-refresh-btn"
+          icon={<ReloadOutlined />}
+          size="small"
+          onClick={onRefresh}
+        >
           Refresh
-        </button>
+        </Button>
         {error && <div className="sidebar-error">{error}</div>}
       </div>
       <div className="sidebar-list">
@@ -263,12 +297,17 @@ function PromptsSidebar({
   return (
     <>
       <div className="sidebar-upload">
-        <button className="upload-btn" onClick={onCreate}>
-          + New prompt
-        </button>
-        <button className="btn btn-secondary btn-sm sidebar-refresh-btn" onClick={onRefresh}>
+        <Button className="upload-btn" onClick={onCreate} type="primary">
+          New prompt
+        </Button>
+        <Button
+          className="sidebar-refresh-btn"
+          icon={<ReloadOutlined />}
+          size="small"
+          onClick={onRefresh}
+        >
           Refresh
-        </button>
+        </Button>
         {error && <div className="sidebar-error">{error}</div>}
       </div>
 
@@ -310,15 +349,20 @@ function NewsSidebar({
   return (
     <>
       <div className="sidebar-upload">
-        <button
+        <Button
           className={`sidebar-filter-btn ${selectedChannelId === null ? 'active' : ''}`}
           onClick={() => onSelect(null)}
         >
           All channels
-        </button>
-        <button className="btn btn-secondary btn-sm sidebar-refresh-btn" onClick={onRefresh}>
+        </Button>
+        <Button
+          className="sidebar-refresh-btn"
+          icon={<ReloadOutlined />}
+          size="small"
+          onClick={onRefresh}
+        >
           Refresh
-        </button>
+        </Button>
         {error && <div className="sidebar-error">{error}</div>}
       </div>
 
@@ -368,13 +412,13 @@ function BookListItem({
       <div className="book-item-top">
         <div className="book-item-title">{book.title || book.filename}</div>
         {isComplete ? (
-          <span className="badge completed">done</span>
+          <Tag color="green">done</Tag>
         ) : isParsing ? (
-          <span className="badge translating">parsing {parsePct}%</span>
+          <Tag color="purple">parsing {parsePct}%</Tag>
         ) : isTranslating ? (
-          <span className="badge translating">translating</span>
+          <Tag color="blue">translating</Tag>
         ) : (
-          <span className="badge queued">parsed</span>
+          <Tag color="gold">parsed</Tag>
         )}
       </div>
       <div className="book-item-author">{book.author || 'Unknown author'}</div>
@@ -384,17 +428,10 @@ function BookListItem({
         <span>🌍 {book.language || '?'}</span>
       </div>
       {isParsing && book.totalPages > 0 && (
-        <div className="mini-bar">
-          <div className="mini-bar-fill" style={{ width: `${parsePct}%` }} />
-        </div>
+        <Progress percent={parsePct} showInfo={false} status="active" />
       )}
       {translated > 0 && !isParsing && (
-        <div className="mini-bar">
-          <div
-            className={`mini-bar-fill ${isComplete ? 'completed' : ''}`}
-            style={{ width: `${pct}%` }}
-          />
-        </div>
+        <Progress percent={pct} showInfo={false} status={isComplete ? 'success' : 'active'} />
       )}
     </div>
   );

@@ -1,4 +1,4 @@
-import styles from './ProgressBar.module.scss';
+import { Progress } from 'antd';
 
 interface ProgressBarProps {
   value: number;
@@ -7,11 +7,8 @@ interface ProgressBarProps {
 }
 
 export function ProgressBar({ value, tone = 'default', className }: ProgressBarProps) {
-  const width = Math.min(100, Math.max(0, value));
+  const percent = Math.min(100, Math.max(0, value));
+  const status = tone === 'failed' ? 'exception' : tone === 'completed' ? 'success' : 'active';
 
-  return (
-    <div className={[styles.bar, className].filter(Boolean).join(' ')}>
-      <div className={[styles.fill, styles[tone]].join(' ')} style={{ width: `${width}%` }} />
-    </div>
-  );
+  return <Progress className={className} percent={percent} showInfo={false} status={status} />;
 }

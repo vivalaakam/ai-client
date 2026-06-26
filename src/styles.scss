@@ -70,8 +70,9 @@ button {
   background: transparent;
   border: none;
   color: var(--text2);
-  transition: background 0.15s,
-  color 0.15s;
+  transition:
+    background 0.15s,
+    color 0.15s;
 }
 
 .activity-item::before {
@@ -278,8 +279,9 @@ button {
   border-radius: 8px;
   font-size: 14px;
   font-weight: 600;
-  transition: border-color 0.15s,
-  background 0.15s;
+  transition:
+    border-color 0.15s,
+    background 0.15s;
 }
 
 .sidebar-filter-btn:hover,
@@ -1347,15 +1349,21 @@ button {
 }
 
 .config-editor-form {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 8px;
   display: flex;
   flex: 1;
   flex-direction: column;
   gap: 14px;
   min-height: min(760px, calc(100vh - 180px));
-  padding: 16px;
+  padding-top: 16px;
+}
+
+.prompt-editor-alert {
+  margin-bottom: 16px;
+}
+
+.prompt-editor-stack,
+.tag-select {
+  width: 100%;
 }
 
 .config-value-group {
@@ -1369,6 +1377,10 @@ button {
   line-height: 1.55;
   min-height: min(640px, calc(100vh - 300px));
   resize: none;
+}
+
+.prompt-history .settings-list-item {
+  cursor: pointer;
 }
 
 .prompt-editor-header {

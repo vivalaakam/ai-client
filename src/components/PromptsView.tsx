@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Alert, Button, Card, Input, List, Select, Space, Tabs, Typography } from 'antd';
+import { HistoryOutlined, PlusOutlined, SaveOutlined } from '@ant-design/icons';
 import { api } from '../api';
 import type { PromptRecord } from '../types';
 
@@ -69,139 +71,96 @@ export function PromptsView({
   }, [selectedPromptId]);
 
   if (loading && prompts.length === 0) {
-    return <div className="empty-state">Loading prompts…</div>;
+    return <Card loading />;
   }
 
   return (
     <section className="prompt-editor-page">
-      {(error || localError) && <div className="inline-error">{localError ?? error}</div>}
+      <Card
+        title={
+          <Space direction="vertical" size={0}>
+            <Typography.Title level={3}>
+              {selected ? `Prompt v${selected.version}` : 'New prompt'}
+            </Typography.Title>
+            <Typography.Text type="secondary">{selected?.id ?? 'Draft prompt'}</Typography.Text>
+          </Space>
+        }
+        extra={
+          <Space>
+            <Button icon={<PlusOutlined />} onClick={() => onSelectPrompt(null)}>
+              New
+            </Button>
+            <Button disabled={!selectedPromptId} icon={<HistoryOutlined />} onClick={loadHistory}>
+              History
+            </Button>
+            <Button icon={<SaveOutlined />} loading={saving} type="primary" onClick={save}>
+              {selectedPromptId ? 'Save version' : 'Create'}
+            </Button>
+          </Space>
+        }
+      >
+        {(error || localError) && (
+          <Alert
+            className="prompt-editor-alert"
+            message={localError ?? error}
+            type="error"
+            showIcon
+          />
+        )}
 
-      <div className="prompt-editor-header">
-        <div>
-          <h2>{selected ? `Prompt v${selected.version}` : 'New prompt'}</h2>
-          <div className="news-subtitle">{selected?.id ?? 'Draft prompt'}</div>
-        </div>
-        <div className="prompt-editor-actions">
-          <button className="btn btn-secondary btn-sm" onClick={() => onSelectPrompt(null)}>
-            New
-          </button>
-          <button
-            className="btn btn-secondary btn-sm"
-            onClick={loadHistory}
-            disabled={!selectedPromptId}
-          >
-            History
-          </button>
-          <button className="btn btn-primary btn-sm" onClick={save} disabled={saving}>
-            {saving ? 'Saving…' : selectedPromptId ? 'Save version' : 'Create'}
-          </button>
-        </div>
-      </div>
-
-      <TagMultiselect selected={tags} onChange={setTags} />
-
-      <div className="markdown-editor">
-        <div className="markdown-pane">
-          <div className="markdown-tabs">
-            <button
-              className={`markdown-tab ${mode === 'edit' ? 'active' : ''}`}
-              onClick={() => setMode('edit')}
-            >
-              Edit
-            </button>
-            <button
-              className={`markdown-tab ${mode === 'preview' ? 'active' : ''}`}
-              onClick={() => setMode('preview')}
-            >
-              Preview
-            </button>
-          </div>
-          {mode === 'edit' ? (
-            <textarea
-              className="prompt-textarea"
-              value={content}
-              onChange={(event) => setContent(event.target.value)}
-              spellCheck={false}
+        <Space direction="vertical" size="middle" className="prompt-editor-stack">
+          <div>
+            <Typography.Text strong>Tags</Typography.Text>
+            <Select
+              className="tag-select"
+              mode="tags"
+              value={tags}
+              onChange={setTags}
+              placeholder="Add tags"
+              tokenSeparators={[',']}
             />
-          ) : (
-            <div className="markdown-preview">{renderMarkdown(content)}</div>
-          )}
-        </div>
-      </div>
+          </div>
+
+          <Tabs
+            activeKey={mode}
+            onChange={(key) => setMode(key as 'edit' | 'preview')}
+            items={[
+              {
+                key: 'edit',
+                label: 'Edit',
+                children: (
+                  <Input.TextArea
+                    className="prompt-textarea"
+                    value={content}
+                    onChange={(event) => setContent(event.target.value)}
+                    spellCheck={false}
+                    autoSize={{ minRows: 20 }}
+                  />
+                ),
+              },
+              {
+                key: 'preview',
+                label: 'Preview',
+                children: <div className="markdown-preview">{renderMarkdown(content)}</div>,
+              },
+            ]}
+          />
+        </Space>
+      </Card>
 
       {history.length > 0 && (
-        <div className="prompt-history">
-          {history.map((prompt) => (
-            <button
-              key={prompt.id}
-              className="settings-list-item"
-              onClick={() => onSelectPrompt(prompt.id)}
-            >
-              <span>v{prompt.version}</span>
-              <small>{prompt.id}</small>
-            </button>
-          ))}
-        </div>
+        <Card className="prompt-history" title="History" size="small">
+          <List
+            dataSource={history}
+            renderItem={(prompt) => (
+              <List.Item className="settings-list-item" onClick={() => onSelectPrompt(prompt.id)}>
+                <List.Item.Meta title={`v${prompt.version}`} description={prompt.id} />
+              </List.Item>
+            )}
+          />
+        </Card>
       )}
     </section>
-  );
-}
-
-function TagMultiselect({
-  selected,
-  onChange,
-}: {
-  selected: string[];
-  onChange: (tags: string[]) => void;
-}) {
-  const [newTag, setNewTag] = useState('');
-  const available = [...selected].sort();
-
-  const toggle = (tag: string) => {
-    onChange(selected.includes(tag) ? selected.filter((item) => item !== tag) : [...selected, tag]);
-  };
-
-  const add = () => {
-    const tag = newTag.trim();
-    if (!tag || selected.includes(tag)) return;
-    onChange([...selected, tag]);
-    setNewTag('');
-  };
-
-  return (
-    <div className="tag-multiselect">
-      <label>Tags</label>
-      <div className="tag-chip-row">
-        {available.length === 0 && selected.length === 0 && (
-          <span className="tag-empty">No tags selected</span>
-        )}
-        {available.map((tag) => (
-          <button
-            key={tag}
-            className={`tag-chip ${selected.includes(tag) ? 'active' : ''}`}
-            onClick={() => toggle(tag)}
-          >
-            {tag}
-          </button>
-        ))}
-      </div>
-      <div className="tag-add-row">
-        <input
-          value={newTag}
-          onChange={(event) => setNewTag(event.target.value)}
-          onKeyDown={(event) => {
-            if (event.key === 'Enter') {
-              event.preventDefault();
-              add();
-            }
-          }}
-          placeholder="Add tag"
-        />
-        <button className="btn btn-secondary btn-sm" onClick={add}>
-          Add
-        </button>
-      </div>
-    </div>
   );
 }
 

@@ -1,4 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
+import { Alert, Breadcrumb, Button, Card, Progress, Space, Tag, Typography } from 'antd';
+import { ArrowLeftOutlined } from '@ant-design/icons';
 import { useParams } from 'react-router-dom';
 import { DropZone } from './DropZone';
 import { BookDetail } from './BookDetail';
@@ -52,69 +54,38 @@ interface MainContentProps {
 export function MainContent(props: MainContentProps) {
   const { view } = props;
 
-  // Breadcrumb rendering
   const renderBreadcrumb = () => {
+    const libraryItem = {
+      title:
+        view === 'library' ? (
+          'Library'
+        ) : (
+          <button className="breadcrumb-link" onClick={() => props.onNavigate('/')}>
+            Library
+          </button>
+        ),
+    };
+
     if (view === 'library') {
-      return (
-        <div className="breadcrumb">
-          <span className="breadcrumb-item active">📖 Library</span>
-        </div>
-      );
+      return <Breadcrumb className="breadcrumb" items={[libraryItem]} />;
     }
+
+    const labelByView = {
+      jobs: 'Jobs',
+      news: 'News',
+      config: 'Config',
+      prompts: 'Prompts',
+      detail: props.books.find((b) => b.id === props.selectedBookId)?.title || 'Book details',
+    };
+
     if (view === 'jobs') {
       return (
-        <div className="breadcrumb">
-          <button className="breadcrumb-link" onClick={() => props.onNavigate('/')}>
-            📖 Library
-          </button>
-          <span className="breadcrumb-sep">/</span>
-          <span className="breadcrumb-item active">⚙️ Jobs</span>
-        </div>
+        <Breadcrumb className="breadcrumb" items={[libraryItem, { title: labelByView.jobs }]} />
       );
     }
-    if (view === 'news') {
-      return (
-        <div className="breadcrumb">
-          <button className="breadcrumb-link" onClick={() => props.onNavigate('/')}>
-            📖 Library
-          </button>
-          <span className="breadcrumb-sep">/</span>
-          <span className="breadcrumb-item active">📰 News</span>
-        </div>
-      );
-    }
-    if (view === 'config') {
-      return (
-        <div className="breadcrumb">
-          <button className="breadcrumb-link" onClick={() => props.onNavigate('/')}>
-            📖 Library
-          </button>
-          <span className="breadcrumb-sep">/</span>
-          <span className="breadcrumb-item active">🔧 Config</span>
-        </div>
-      );
-    }
-    if (view === 'prompts') {
-      return (
-        <div className="breadcrumb">
-          <button className="breadcrumb-link" onClick={() => props.onNavigate('/')}>
-            📖 Library
-          </button>
-          <span className="breadcrumb-sep">/</span>
-          <span className="breadcrumb-item active">✍️ Prompts</span>
-        </div>
-      );
-    }
-    // detail view
-    const book = props.books.find((b) => b.id === props.selectedBookId);
+
     return (
-      <div className="breadcrumb">
-        <button className="breadcrumb-link" onClick={() => props.onNavigate('/')}>
-          📖 Library
-        </button>
-        <span className="breadcrumb-sep">/</span>
-        <span className="breadcrumb-item active">{book?.title || 'Book details'}</span>
-      </div>
+      <Breadcrumb className="breadcrumb" items={[libraryItem, { title: labelByView[view] }]} />
     );
   };
 
@@ -122,9 +93,7 @@ export function MainContent(props: MainContentProps) {
     return (
       <main className="main">
         <div className="main-header">
-          <button className="btn btn-secondary btn-sm" onClick={() => props.onNavigate('/')}>
-            ← Back
-          </button>
+          <Button icon={<ArrowLeftOutlined />} size="small" onClick={() => props.onNavigate('/')} />
           {renderBreadcrumb()}
         </div>
         <div className="main-content">
@@ -257,36 +226,44 @@ function BookCard({ book, onClick }: { book: BookRecord; onClick: () => void }) 
   const ext = book.filename?.split('.').pop()?.toUpperCase() || '?';
 
   return (
-    <div className={`book-card ${isComplete ? 'completed' : ''}`} onClick={onClick}>
+    <Card
+      className={`book-card ${isComplete ? 'completed' : ''}`}
+      hoverable
+      onClick={onClick}
+      size="small"
+    >
       <div className="book-card-top">
         <div className="book-card-format">{ext}</div>
         {isComplete ? (
-          <span className="badge completed">✓ done</span>
+          <Tag color="green">done</Tag>
         ) : isParsing ? (
-          <span className="badge translating">parsing {parsePct}%</span>
+          <Tag color="purple">parsing {parsePct}%</Tag>
         ) : isTranslating ? (
-          <span className="badge translating">{pct}%</span>
+          <Tag color="blue">{pct}%</Tag>
         ) : (
-          <span className="badge queued">parsed</span>
+          <Tag color="gold">parsed</Tag>
         )}
       </div>
-      <div className="book-card-title">{book.title || book.filename}</div>
-      <div className="book-card-author">{book.author || 'Unknown author'}</div>
-      <div className="book-card-stats">
+      <Typography.Title level={5} className="book-card-title">
+        {book.title || book.filename}
+      </Typography.Title>
+      <Typography.Text type="secondary" className="book-card-author">
+        {book.author || 'Unknown author'}
+      </Typography.Text>
+      <Space wrap size={[8, 4]} className="book-card-stats">
         <span>📄 {total}</span>
         <span>✅ {translated}</span>
         <span>🌍 {book.language || '?'}</span>
         {book.targetLang && <span>→ {book.targetLang}</span>}
-      </div>
+      </Space>
       {(translated > 0 || isParsing) && (
-        <div className="mini-bar">
-          <div
-            className={`mini-bar-fill ${isComplete ? 'completed' : ''}`}
-            style={{ width: `${isParsing ? parsePct : pct}%` }}
-          />
-        </div>
+        <Progress
+          percent={isParsing ? parsePct : pct}
+          showInfo={false}
+          status={isComplete ? 'success' : 'active'}
+        />
       )}
-    </div>
+    </Card>
   );
 }
 
@@ -331,17 +308,17 @@ function BookDetailView({
   }, [load]);
 
   if (loading && !detail) {
-    return <div className="empty-state">Loading book details…</div>;
+    return <Card loading />;
   }
 
   if (error) {
     return (
-      <div>
-        <p style={{ color: 'var(--red)', marginBottom: 12 }}>{error}</p>
-        <button className="btn btn-secondary" onClick={onBack}>
-          ← Back
-        </button>
-      </div>
+      <Space direction="vertical">
+        <Alert message={error} type="error" showIcon />
+        <Button icon={<ArrowLeftOutlined />} onClick={onBack}>
+          Back
+        </Button>
+      </Space>
     );
   }
 
