@@ -1,0 +1,52 @@
+.root {
+  width: 100%;
+}
+
+.dropZone {
+  border: 2px dashed var(--border);
+  border-radius: var(--radius);
+  padding: 60px 40px;
+  text-align: center;
+  transition: all 0.2s;
+  cursor: pointer;
+
+  &:hover,
+  &.dragover {
+    border-color: var(--accent);
+    background: rgba(108, 92, 231, 0.05);
+  }
+}
+
+.icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+.label {
+  color: var(--text2);
+  font-size: 15px;
+  margin-bottom: 8px;
+
+  strong {
+    color: var(--accent2);
+  }
+}
+
+.hint {
+  color: var(--text2);
+  font-size: 12px;
+}
+
+.fileInput {
+  display: none;
+}
+
+.errorCard {
+  border-color: var(--red);
+  margin-top: 16px;
+}
+
+.errorText {
+  color: var(--red);
+  font-size: 14px;
+}

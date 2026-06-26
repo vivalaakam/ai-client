@@ -18,24 +18,27 @@
     "ci": "npm run check && npm run lint && npm run format:check && npm run test"
   },
   "dependencies": {
+    "@ant-design/icons": "^6.2.5",
+    "@tanstack/react-query": "^5.101.1",
     "@tauri-apps/api": "^2",
     "@tauri-apps/plugin-http": "^2.5.9",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "react-router-dom": "^6"
+    "antd": "^6.4.5",
+    "react": "19.2.7",
+    "react-dom": "19.2.7",
+    "react-router": "8.0.1"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@tauri-apps/cli": "^2",
-    "@testing-library/react": "^16.3.2",
-    "@types/react": "^18.3.1",
-    "@types/react-dom": "^18.3.1",
+    "@types/react": "19.2.17",
+    "@types/react-dom": "19.2.3",
     "@vitejs/plugin-react": "^4.7.0",
     "eslint": "^10.5.0",
     "eslint-plugin-react-hooks": "^7.1.1",
     "globals": "^17.6.0",
     "jsdom": "^29.1.1",
     "prettier": "^3.8.4",
+    "sass": "^1.93.3",
     "typescript": "^5",
     "typescript-eslint": "^8.61.1",
     "vite": "^5",

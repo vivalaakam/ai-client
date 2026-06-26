@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
-import { api } from '../api';
+import { api } from '../../api';
+import styles from './UploadOverlay.module.scss';
 
 interface UploadOverlayProps {
   jobId: string;
@@ -46,12 +47,12 @@ export function UploadOverlay({ jobId, onComplete }: UploadOverlayProps) {
   }, [poll]);
 
   return (
-    <div className="overlay">
-      <div className="overlay-card">
-        <div className="icon">
-          <span className="spinner-icon">⏳</span>
+    <div className={styles.overlay}>
+      <div className={styles.card}>
+        <div className={styles.icon}>
+          <span className={styles.spinnerIcon}>⏳</span>
         </div>
-        <div className="text">{message}</div>
+        <div className={styles.text}>{message}</div>
       </div>
     </div>
   );

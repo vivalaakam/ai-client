@@ -1,6 +1,11 @@
-import { useState, useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { api } from '../api';
 import { BASE_URL } from '../config';
+import { BookSummaryCard } from './BookSummaryCard';
+import { ChaptersCard } from './ChaptersCard';
+import { ExportSection } from './ExportSection';
+import { ImagesCard } from './ImagesCard';
+import { TranslateSection } from './TranslateSection';
 import type { BookDetail as BookDetailType, SystemConfig } from '../types';
 
 interface BookDetailProps {
@@ -38,6 +43,8 @@ export function BookDetail({
   const isParsing = detail.status === 'parsing';
   const parsePct =
     detail.totalPages > 0 ? Math.round((detail.parsedPages / detail.totalPages) * 100) : 0;
+  const showTranslateSection = !config.uploadOnly && !isComplete && !isParsing;
+  const showExportTranslated = translated > 0;
 
   const handleTranslate = useCallback(async () => {
     if (!targetLang) return;
@@ -67,12 +74,12 @@ export function BookDetail({
         const href = result.downloadUrl.startsWith('http')
           ? result.downloadUrl
           : BASE_URL + result.downloadUrl;
-        const a = document.createElement('a');
-        a.href = href;
-        a.download = href.split('/').pop()?.replace('.epub', '.zip') || 'book.zip';
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
+        const link = document.createElement('a');
+        link.href = href;
+        link.download = href.split('/').pop()?.replace('.epub', '.zip') || 'book.zip';
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
       } catch (err: unknown) {
         setExportError(err instanceof Error ? err.message : 'Export failed');
       } finally {
@@ -92,213 +99,45 @@ export function BookDetail({
     }
   }, [detail.id, onDelete]);
 
-  const showTranslateSection = !config.uploadOnly && !isComplete && !isParsing;
-  const showExportTranslated = translated > 0;
-
   return (
-    <div>
-      <div className="card">
-        <div className="detail-title">{detail.title || detail.filename}</div>
-        <div className="detail-author">{detail.author || 'Unknown author'}</div>
-        <div className="detail-meta">
-          <span>📄 {total} blocks</span>
-          <span>🌍 {detail.language || '?'}</span>
-          <span>📦 {detail.filename?.split('.').pop() || '?'}</span>
-          {isComplete && <span className="badge completed">✓ complete</span>}
-          {isTranslating && <span className="badge translating">translating</span>}
-          {isParsing && <span className="badge translating">parsing {parsePct}%</span>}
-          {!isComplete && !isTranslating && !isParsing && (
-            <span className="badge queued">parsed</span>
-          )}
-        </div>
-
-        {isParsing && detail.totalPages > 0 && (
-          <div style={{ marginTop: 12 }}>
-            <div className="progress-text">
-              <span>
-                OCR: {detail.parsedPages} / {detail.totalPages} pages
-              </span>
-              <span>{parsePct}%</span>
-            </div>
-            <div className="progress-bar">
-              <div className="progress-fill" style={{ width: `${parsePct}%` }} />
-            </div>
-          </div>
-        )}
-
-        {translated > 0 && !isParsing && (
-          <div style={{ marginTop: 12 }}>
-            <div className="progress-text">
-              <span>
-                {translated} / {total} blocks
-              </span>
-              <span>{pct}%</span>
-            </div>
-            <div className="progress-bar">
-              <div
-                className={`progress-fill ${isComplete ? 'completed' : ''}`}
-                style={{ width: `${pct}%` }}
-              />
-            </div>
-          </div>
-        )}
-
-        <div className="btn-row">
-          <button className="btn-sm btn-danger" onClick={handleDelete}>
-            ✕ Delete
-          </button>
-        </div>
-      </div>
+    <>
+      <BookSummaryCard
+        detail={detail}
+        total={total}
+        translated={translated}
+        pct={pct}
+        isComplete={isComplete}
+        isTranslating={isTranslating}
+        isParsing={isParsing}
+        parsePct={parsePct}
+        onDelete={handleDelete}
+      />
 
       {showTranslateSection && (
-        <div className="translate-section">
-          <h3>🌐 Translate this book</h3>
-          <div className="form-row">
-            <div className="form-group">
-              <label>Source Language</label>
-              <select value={sourceLang} onChange={(e) => setSourceLang(e.target.value)}>
-                <option value="auto">Auto-detect</option>
-                <option value="English">English</option>
-                <option value="Russian">Russian</option>
-                <option value="Spanish">Spanish</option>
-                <option value="French">French</option>
-                <option value="German">German</option>
-                <option value="Chinese">Chinese</option>
-                <option value="Japanese">Japanese</option>
-                <option value="Italian">Italian</option>
-                <option value="Portuguese">Portuguese</option>
-              </select>
-            </div>
-            <div className="form-group">
-              <label>Target Language</label>
-              <select value={targetLang} onChange={(e) => setTargetLang(e.target.value)}>
-                <option value="">Select…</option>
-                <option value="English">English</option>
-                <option value="Russian">Russian</option>
-                <option value="Spanish">Spanish</option>
-                <option value="French">French</option>
-                <option value="German">German</option>
-                <option value="Chinese">Chinese</option>
-                <option value="Japanese">Japanese</option>
-                <option value="Italian">Italian</option>
-                <option value="Portuguese">Portuguese</option>
-              </select>
-            </div>
-            <div className="form-group full">
-              <label>Model</label>
-              <select
-                value={model}
-                onChange={(e) => setModel(e.target.value)}
-                disabled={modelsError}
-              >
-                {modelsError ? (
-                  <option value="">API unavailable</option>
-                ) : models.length === 0 ? (
-                  <option value="">No models found</option>
-                ) : (
-                  models.map((m) => (
-                    <option key={m} value={m}>
-                      {m}
-                    </option>
-                  ))
-                )}
-              </select>
-            </div>
-          </div>
-          <div className="btn-row">
-            <button
-              className="btn btn-green"
-              onClick={handleTranslate}
-              disabled={translating || !targetLang || (models.length > 0 && !model && !modelsError)}
-            >
-              {translating ? '⏳ Starting…' : '🚀 Start Translation'}
-            </button>
-          </div>
-        </div>
+        <TranslateSection
+          sourceLang={sourceLang}
+          targetLang={targetLang}
+          model={model}
+          models={models}
+          modelsError={modelsError}
+          translating={translating}
+          onSourceLangChange={setSourceLang}
+          onTargetLangChange={setTargetLang}
+          onModelChange={setModel}
+          onTranslate={handleTranslate}
+        />
       )}
 
-      <div className="card">
-        <h3>📦 Export EPUB</h3>
-        <p style={{ fontSize: 13, color: 'var(--text2)', marginBottom: 12 }}>
-          Download the book as EPUB — original text or translated version.
-        </p>
-        <div className="btn-row">
-          <button
-            className="btn btn-blue"
-            onClick={() => handleExport('original')}
-            disabled={exporting}
-          >
-            📄 Export Original
-          </button>
-          {showExportTranslated && (
-            <button
-              className="btn btn-green"
-              onClick={() => handleExport('translated')}
-              disabled={exporting}
-            >
-              🌐 Export Translated
-            </button>
-          )}
-        </div>
-        {exporting && (
-          <div style={{ marginTop: 12 }}>
-            <div className="progress-text">
-              <span>Assembling {exportMode} EPUB…</span>
-            </div>
-            <div className="progress-bar">
-              <div className="progress-fill" style={{ width: '50%' }} />
-            </div>
-          </div>
-        )}
-        {exportError && (
-          <p style={{ color: 'var(--red)', fontSize: 13, marginTop: 8 }}>{exportError}</p>
-        )}
-      </div>
+      <ExportSection
+        exporting={exporting}
+        exportMode={exportMode}
+        exportError={exportError}
+        showExportTranslated={showExportTranslated}
+        onExport={handleExport}
+      />
 
-      {detail.chapters?.length > 0 && (
-        <div className="card">
-          <h3>📑 Chapters ({detail.chapters.length})</h3>
-          <div className="chapters-list">
-            {detail.chapters.map((ch, i) => {
-              const chPct =
-                ch.totalBlocks > 0 ? Math.round((ch.translatedBlocks / ch.totalBlocks) * 100) : 0;
-              return (
-                <div className="chapter-row" key={i}>
-                  <span className="chapter-name">{ch.docPath}</span>
-                  <span className="chapter-progress">
-                    {ch.translatedBlocks}/{ch.totalBlocks} ({chPct}%)
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
-      {detail.images?.length > 0 && (
-        <div className="card">
-          <h3>🖼️ Images ({detail.images.length})</h3>
-          <div className="images-grid">
-            {detail.images.map((img) => {
-              const sizeKB = (img.size / 1024).toFixed(1);
-              const src = img.url.startsWith('http') ? img.url : BASE_URL + img.url;
-              return (
-                <div className="img-item" key={img.id}>
-                  <img
-                    src={src}
-                    alt={img.originalPath}
-                    loading="lazy"
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).style.display = 'none';
-                    }}
-                  />
-                  <div className="img-size">{sizeKB}KB</div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
-    </div>
+      {detail.chapters?.length > 0 && <ChaptersCard chapters={detail.chapters} />}
+      {detail.images?.length > 0 && <ImagesCard images={detail.images} />}
+    </>
   );
 }

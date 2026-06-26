@@ -1,0 +1,53 @@
+.rowItem {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-bottom: 6px;
+  padding: 10px 12px;
+  text-align: left;
+  transition: border-color 0.15s;
+  width: 100%;
+
+  &:hover,
+  &.active {
+    border-color: var(--accent);
+  }
+
+  .active {
+    background: rgba(108, 92, 231, 0.1);
+  }
+
+  .head {
+    font-size: 13px;
+    font-weight: 700;
+
+    white-space: nowrap;
+  }
+
+  .value,
+  .extra {
+    color: var(--text2);
+    font-size: 11px;
+    display: -webkit-box;
+    overflow: hidden;
+    overflow-wrap: anywhere;
+    -webkit-box-orient: vertical;
+  }
+
+  .value {
+    -webkit-line-clamp: 3;
+  }
+
+  .extra {
+    -webkit-line-clamp: 2;
+
+    &:empty {
+      display: none;
+    }
+  }
+}
