@@ -1,12 +1,33 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Route, Routes, useLocation, useNavigate } from 'react-router-dom';
+import { Navigate, Route, Routes, useLocation, useNavigate } from 'react-router';
+import { Badge, Button, Layout, Tooltip } from 'antd';
+import {
+  BookOutlined,
+  CloudUploadOutlined,
+  FormOutlined,
+  ReadOutlined,
+  SettingOutlined,
+  ToolOutlined,
+} from '@ant-design/icons';
 import { api } from './api';
-import { MainContent } from './components/MainContent';
-import { Sidebar } from './components/Sidebar/Sidebar.tsx';
+import { SidebarList } from './components/Sidebar/SidebarList.tsx';
+import { BookListItem } from './components/Sidebar/BookListItem.tsx';
+import { ChannelListItem } from './components/Sidebar/ChannelListItem.tsx';
+import { ConfigListItem } from './components/Sidebar/ConfigListItem.tsx';
 import { UploadOverlay } from './components/UploadOverlay';
 import { useBooks, useConfig, useModels } from './hooks/useBooks';
 import { useWebSocket } from './hooks/useWebSocket';
-import type { AppConfigEntry, PromptRecord, TgChannel, TranslationJob } from './types';
+import { LibraryPage } from './pages/LibraryPage';
+import { BookDetailPage } from './pages/BookDetailPage';
+import { NewsPage } from './pages/NewsPage';
+import { JobsPage } from './pages/JobsPage';
+import { ConfigPage } from './pages/ConfigPage';
+import type { AppConfigEntry, TgChannel, TranslationJob } from './types';
+import { PromptsView } from './components/PromptsView';
+import { PromptViewPage } from './pages/PromptViewPage.tsx';
+import { PromptNewPage } from './pages/PromptNewPage.tsx';
+import { PromptsList } from './pages/PromptsList.tsx';
+import Sider from 'antd/es/layout/Sider';
 
 export function AppInner() {
   const navigate = useNavigate();
@@ -18,16 +39,14 @@ export function AppInner() {
   const [tgChannelsLoading, setTgChannelsLoading] = useState(false);
   const [tgChannelsError, setTgChannelsError] = useState<string | null>(null);
   const [newsRefreshNonce, setNewsRefreshNonce] = useState(0);
-  const [prompts, setPrompts] = useState<PromptRecord[]>([]);
-  const [promptsLoading, setPromptsLoading] = useState(false);
-  const [promptsError, setPromptsError] = useState<string | null>(null);
-  const [selectedPromptId, setSelectedPromptId] = useState<string | null>(null);
   const [configEntries, setConfigEntries] = useState<AppConfigEntry[]>([]);
   const [configEntriesLoading, setConfigEntriesLoading] = useState(false);
   const [configEntriesError, setConfigEntriesError] = useState<string | null>(null);
   const [selectedConfigSlug, setSelectedConfigSlug] = useState<string | null>(null);
 
-  const { connected, subscribe } = useWebSocket((job) => {
+  console.log('appInner rendered');
+
+  const { subscribe } = useWebSocket((job) => {
     setJobUpdate(job);
     if (location.pathname === '/jobs') {
       api
@@ -49,7 +68,9 @@ export function AppInner() {
   );
 
   useEffect(() => {
-    if (jobUpdate) refresh();
+    if (jobUpdate) {
+      refresh();
+    }
   }, [jobUpdate, refresh]);
 
   const handleUploadComplete = useCallback(
@@ -64,19 +85,6 @@ export function AppInner() {
   const handleSelectBook = useCallback(
     (bookId: string | null) => {
       navigate(bookId ? `/book/${bookId}` : '/');
-    },
-    [navigate]
-  );
-
-  const handleNavigate = useCallback(
-    (path: string) => {
-      navigate(path);
-      if (path === '/jobs') {
-        api
-          .jobList()
-          .then((data) => setJobs(data.jobs || []))
-          .catch(() => {});
-      }
     },
     [navigate]
   );
@@ -100,23 +108,6 @@ export function AppInner() {
     setNewsRefreshNonce((nonce) => nonce + 1);
   }, [refreshTgChannels]);
 
-  const refreshPrompts = useCallback(async () => {
-    setPromptsLoading(true);
-    try {
-      const data = await api.promptsList();
-      setPrompts(data);
-      setPromptsError(null);
-      setSelectedPromptId((current) => {
-        if (current === null || data.some((prompt) => prompt.id === current)) return current;
-        return data[0]?.id ?? null;
-      });
-    } catch (err) {
-      setPromptsError(err instanceof Error ? err.message : 'Failed to load prompts');
-    } finally {
-      setPromptsLoading(false);
-    }
-  }, []);
-
   const refreshConfigEntries = useCallback(async () => {
     setConfigEntriesLoading(true);
     try {
@@ -139,13 +130,14 @@ export function AppInner() {
       ? 'news'
       : location.pathname === '/config'
         ? 'config'
-        : location.pathname === '/prompts'
+        : location.pathname.startsWith('/prompts')
           ? 'prompts'
           : location.pathname === '/jobs'
             ? 'jobs'
             : location.pathname.startsWith('/book/')
               ? 'detail'
               : 'library';
+
   const selectedBookId = view === 'detail' ? location.pathname.split('/book/')[1] || null : null;
   const selectedChannelId =
     view === 'news' ? new URLSearchParams(location.search).get('channel') : null;
@@ -157,107 +149,228 @@ export function AppInner() {
   }, [refreshTgChannels, tgChannels.length, tgChannelsLoading, view]);
 
   useEffect(() => {
-    if (view === 'prompts' && prompts.length === 0 && !promptsLoading) {
-      refreshPrompts();
-    }
-  }, [prompts.length, promptsLoading, refreshPrompts, view]);
-
-  useEffect(() => {
     if (view === 'config' && configEntries.length === 0 && !configEntriesLoading) {
       refreshConfigEntries();
     }
   }, [configEntries.length, configEntriesLoading, refreshConfigEntries, view]);
 
-  const mainProps = {
-    books,
-    config,
-    models,
-    modelsError,
-    jobs,
-    tgChannels,
-    configEntries,
-    configEntriesLoading,
-    configEntriesError,
-    selectedConfigSlug,
-    prompts,
-    promptsLoading,
-    promptsError,
-    selectedPromptId,
-    selectedChannelId,
-    newsRefreshNonce,
-    onRefreshTgChannels: refreshNews,
-    onRefreshConfigEntries: refreshConfigEntries,
-    onSelectConfigEntry: setSelectedConfigSlug,
-    onRefreshPrompts: refreshPrompts,
-    onSelectPrompt: setSelectedPromptId,
-    selectedBookId,
-    onNavigate: handleNavigate,
-    onRefresh: refresh,
-    onSubscribeJob: handleJobUpdate,
-    onUploadStart: (jobId: string) => {
-      setUploadJobId(jobId);
-      subscribe(jobId);
-    },
-    onUploadComplete: handleUploadComplete,
-    onSelectBook: handleSelectBook,
-  };
+  const sidebarContent = (() => {
+    if (view === 'prompts') {
+      return null;
+    }
+    if (view === 'news') {
+      return (
+        <SidebarList
+          items={tgChannels}
+          renderItem={(ch) => (
+            <ChannelListItem
+              channel={ch}
+              active={ch.id === selectedChannelId}
+              onClick={() =>
+                navigate(ch.id === selectedChannelId ? '/news' : `/news?channel=${ch.id}`)
+              }
+            />
+          )}
+          keyExtractor={(ch) => ch.id}
+          onRefresh={refreshNews}
+          loading={tgChannelsLoading}
+          error={tgChannelsError}
+          emptyText="No channels yet"
+          extra={
+            <Button
+              className={`sidebar-filter-btn ${selectedChannelId === null ? 'active' : ''}`}
+              onClick={() => navigate('/news')}
+            >
+              All channels
+            </Button>
+          }
+        />
+      );
+    }
+    if (view === 'config') {
+      return (
+        <SidebarList
+          items={configEntries}
+          renderItem={(entry) => (
+            <ConfigListItem
+              entry={entry}
+              active={entry.slug === selectedConfigSlug}
+              onClick={() => {
+                setSelectedConfigSlug(entry.slug);
+                navigate('/config');
+              }}
+            />
+          )}
+          keyExtractor={(entry) => entry.slug}
+          onNew={() => {
+            setSelectedConfigSlug(null);
+            navigate('/config');
+          }}
+          newLabel="New config"
+          onRefresh={refreshConfigEntries}
+          loading={configEntriesLoading}
+          error={configEntriesError}
+          emptyText="No config entries yet"
+        />
+      );
+    }
+
+    // library / detail / jobs
+    return (
+      <SidebarList
+        items={books}
+        renderItem={(book) => (
+          <BookListItem
+            book={book}
+            active={book.id === selectedBookId}
+            onClick={() => handleSelectBook(book.id)}
+          />
+        )}
+        keyExtractor={(book) => book.id}
+        onNew={() => navigate('/')}
+        newLabel="Upload Book/Article"
+        newIcon={<CloudUploadOutlined />}
+        onRefresh={refresh}
+        loading={loading}
+        emptyText={
+          <>
+            No books yet
+            <br />
+            <span style={{ fontSize: 12, opacity: 0.7 }}>Upload or drag a file →</span>
+          </>
+        }
+        extra={
+          <div className="api-status">
+            <div className={`api-dot ${modelsError ? 'err' : 'ok'}`} />
+            <span>
+              {modelsError ? 'API unavailable' : `API connected — ${models.length} model(s)`}
+            </span>
+          </div>
+        }
+      />
+    );
+  })();
 
   return (
-    <div className="app">
-      <Sidebar
-        books={books}
-        loading={loading}
-        selectedBookId={selectedBookId}
-        tgChannels={tgChannels}
-        tgChannelsLoading={tgChannelsLoading}
-        tgChannelsError={tgChannelsError}
-        selectedChannelId={selectedChannelId}
-        configEntries={configEntries}
-        configEntriesLoading={configEntriesLoading}
-        configEntriesError={configEntriesError}
-        selectedConfigSlug={selectedConfigSlug}
-        prompts={prompts}
-        promptsLoading={promptsLoading}
-        promptsError={promptsError}
-        selectedPromptId={selectedPromptId}
-        onRefreshTgChannels={refreshNews}
-        onRefreshConfigEntries={refreshConfigEntries}
-        onSelectConfigEntry={(slug) => {
-          setSelectedConfigSlug(slug);
-          navigate('/config');
-        }}
-        onCreateConfigEntry={() => {
-          setSelectedConfigSlug(null);
-          navigate('/config');
-        }}
-        onRefreshPrompts={refreshPrompts}
-        onSelectPrompt={(promptId) => {
-          setSelectedPromptId(promptId);
-          navigate('/prompts');
-        }}
-        onCreatePrompt={() => {
-          setSelectedPromptId(null);
-          navigate('/prompts');
-        }}
-        onSelectBook={handleSelectBook}
-        onRefresh={refresh}
-        connected={connected}
-        modelsCount={models.length}
-        modelsError={modelsError}
-        onUploadClick={() => navigate('/')}
-        currentView={view}
-        onNavigate={handleNavigate}
-      />
+    <Layout className="app">
+      <Sider width={50}>
+        <Tooltip title="Library" placement="right">
+          <Button
+            className={`activity-item ${location.pathname === '/' || location.pathname.startsWith('/detail') ? 'active' : ''}`}
+            onClick={() => navigate('/')}
+            aria-label="Library"
+            type="text"
+          >
+            <Badge count={books.length} size="small" offset={[5, -3]}>
+              <BookOutlined className="activity-icon" />
+            </Badge>
+          </Button>
+        </Tooltip>
+        <Tooltip title="News" placement="right">
+          <Button
+            className={`activity-item ${location.pathname.startsWith('/news') ? 'active' : ''}`}
+            onClick={() => navigate('/news')}
+            aria-label="News"
+            type="text"
+          >
+            <ReadOutlined className="activity-icon" />
+          </Button>
+        </Tooltip>
+        <Tooltip title="Jobs" placement="right">
+          <Button
+            className={`activity-item ${location.pathname.startsWith('/jobs') ? 'active' : ''}`}
+            onClick={() => navigate('/jobs')}
+            aria-label="Jobs"
+            type="text"
+          >
+            <SettingOutlined className="activity-icon" />
+          </Button>
+        </Tooltip>
+        <Tooltip title="Config" placement="right">
+          <Button
+            className={`activity-item ${location.pathname.startsWith('/config') ? 'active' : ''}`}
+            onClick={() => navigate('/config')}
+            aria-label="Config"
+            type="text"
+          >
+            <ToolOutlined className="activity-icon" />
+          </Button>
+        </Tooltip>
+        <Tooltip title="Prompts" placement="right">
+          <Button
+            className={`activity-item ${location.pathname.startsWith('/prompts') ? 'active' : ''}`}
+            onClick={() => navigate('/prompts')}
+            aria-label="Prompts"
+            type="text"
+          >
+            <FormOutlined className="activity-icon" />
+          </Button>
+        </Tooltip>
+      </Sider>
+
+      {sidebarContent}
       <Routes>
-        <Route path="/" element={<MainContent view="library" {...mainProps} />} />
-        <Route path="/news" element={<MainContent view="news" {...mainProps} />} />
-        <Route path="/config" element={<MainContent view="config" {...mainProps} />} />
-        <Route path="/prompts" element={<MainContent view="prompts" {...mainProps} />} />
-        <Route path="/jobs" element={<MainContent view="jobs" {...mainProps} />} />
-        <Route path="/book/:bookId" element={<MainContent view="detail" {...mainProps} />} />
-        <Route path="*" element={<MainContent view="library" {...mainProps} />} />
+        <Route
+          path="/"
+          element={
+            <LibraryPage
+              books={books}
+              onUploadStart={(jobId) => {
+                setUploadJobId(jobId);
+                subscribe(jobId);
+              }}
+              onUploadComplete={handleUploadComplete}
+            />
+          }
+        />
+        <Route
+          path="/news"
+          element={
+            <NewsPage
+              tgChannels={tgChannels}
+              refreshNonce={newsRefreshNonce}
+              onRefresh={refreshNews}
+            />
+          }
+        />
+        <Route
+          path="/config"
+          element={
+            <ConfigPage
+              entries={configEntries}
+              loading={configEntriesLoading}
+              error={configEntriesError}
+              selectedSlug={selectedConfigSlug}
+              onSelectEntry={setSelectedConfigSlug}
+              onRefresh={refreshConfigEntries}
+            />
+          }
+        />
+        <Route path="/prompts" Component={PromptsList}>
+          <Route index Component={PromptsView} />
+          <Route path="new" Component={PromptNewPage} />
+          <Route path=":id" Component={PromptViewPage} />
+        </Route>
+        <Route
+          path="/jobs"
+          element={<JobsPage jobs={jobs} onRefresh={refresh} onSubscribeJob={handleJobUpdate} />}
+        />
+        <Route
+          path="/book/:bookId"
+          element={
+            <BookDetailPage
+              books={books}
+              config={config}
+              models={models}
+              modelsError={modelsError}
+              onRefresh={refresh}
+              onSubscribeJob={handleJobUpdate}
+            />
+          }
+        />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
       {uploadJobId && <UploadOverlay jobId={uploadJobId} onComplete={handleUploadComplete} />}
-    </div>
+    </Layout>
   );
 }

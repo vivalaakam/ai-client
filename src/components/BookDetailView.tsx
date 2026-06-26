@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Alert, Button, Card, Space } from 'antd';
 import { ArrowLeftOutlined } from '@ant-design/icons';
-import { useParams } from 'react-router-dom';
+import { useParams } from 'react-router';
 import { api } from '../api';
 import { BookDetail } from './BookDetail';
 import type { BookDetail as BookDetailType, SystemConfig } from '../types';

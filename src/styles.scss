@@ -127,16 +127,6 @@ button {
   animation: pulse 2s infinite;
 }
 
-.sidebar {
-  width: var(--sidebar-w);
-  min-width: var(--sidebar-w);
-  background: var(--surface);
-  border-right: 1px solid var(--border);
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
 .sidebar-header {
   padding: 20px 16px 12px;
   border-bottom: 1px solid var(--border);

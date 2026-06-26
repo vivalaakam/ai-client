@@ -1,6 +1,9 @@
 import { App as AntApp, ConfigProvider, theme } from 'antd';
-import { BrowserRouter } from 'react-router-dom';
+import { BrowserRouter } from 'react-router';
 import { AppInner } from './AppInner';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+
+const queryClient = new QueryClient();
 
 export function App() {
   return (
@@ -14,11 +17,13 @@ export function App() {
         },
       }}
     >
-      <AntApp>
-        <BrowserRouter>
-          <AppInner />
-        </BrowserRouter>
-      </AntApp>
+      <QueryClientProvider client={queryClient}>
+        <AntApp>
+          <BrowserRouter>
+            <AppInner />
+          </BrowserRouter>
+        </AntApp>
+      </QueryClientProvider>
     </ConfigProvider>
   );
 }
